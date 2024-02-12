@@ -1,4 +1,4 @@
-<mvc:View controllerName="suptpverladung2.0.controller.TourSelection"
+<mvc:View controllerName="suptpverladung2.0.controller.Tourselection"
     xmlns:vbm="sap.ui.vbm" 
     xmlns:mvc="sap.ui.core.mvc" 
     xmlns="sap.m"

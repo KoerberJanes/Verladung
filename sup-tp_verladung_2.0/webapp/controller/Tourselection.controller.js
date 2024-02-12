@@ -19,7 +19,7 @@ sap.ui.define([
     function (Controller, JSONModel, HashChanger, Filter, Sorter, MessageToast, MessageBox, GeoMap, Spot, Spots, VoAbstract, FilterOperator, Item) {
         "use strict";
 
-        return Controller.extend("suptpverladung2.0.controller.TourSelection", {
+        return Controller.extend("suptpverladung2.0.controller.Tourselection", {
             onInit: function () {
                 //!Models sind alle aufrufbar aus der manifest mit:
                 //!"this.getOwnerComponent().getModel("ModelName");"
