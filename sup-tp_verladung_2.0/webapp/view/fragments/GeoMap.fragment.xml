@@ -1,0 +1,51 @@
+<core:FragmentDefinition
+    xmlns:mvc="sap.ui.core.mvc" 
+    xmlns="sap.m"
+    xmlns:layout="sap.ui.layout"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    xmlns:vbm="sap.ui.vbm"
+    displayBlock="true">
+   <Dialog id="customerInfoGeoMapDialog" initialFocus="" afterClose="">
+        <customHeader>
+            <!--custom Header Items-->
+            <Bar id="CustomerInfoGeoMapDialogHeaderBar">
+                <contentLeft>
+                    <Title id="CustomerInfoGeoMapDialogTitle" text="{i18n>CustomerInfoGeoMapDialogTitle}"></Title>
+                </contentLeft>
+            </Bar>
+        </customHeader>
+        <content>
+            <vbm:GeoMap id="GeoMap" width="100%" height="30em" centerPosition="7.46;51.5643" initialZoom="14" mapConfiguration="{mapConfig>/}">
+                <vbm:vos>
+                    <vbm:Spots 
+                        click="onClickGeoMapSpot" 
+                        contextMenu="onContextMenuItem" 
+                        id="GeoMapSpots" 
+                        items="{CaseEvents>/results}" 
+                        posChangeable="false" 
+                        scaleChangeable="false">
+                        <vbm:items>
+                            <vbm:Spot 
+                                id="Spot"
+                                position="{Longitude};{Latitude};0" 
+                                tooltip="{EventName} - {path: 'EventDatetime'} {path: 'EventDatetime'}" 
+                                type="Warning"
+                                click="onClickSpot" 
+                                contextMenu="onContextMenuSpot" 
+                                text="{EventName}"
+                                scale="{path: 'DeleteInd'}"/>
+                        </vbm:items>
+                    </vbm:Spots>
+                </vbm:vos>
+            </vbm:GeoMap>
+        </content>
+        <beginButton>
+            <!--<Button text="Bestätigen" press="onClearingDialogClose"></Button>-->
+        </beginButton>
+        
+        <endButton>
+            <Button id="CustomerInfoGeoMapDialogButtonOK" text="{i18n>abort}" press="onCustomerInfoGeoMapDialogClose"></Button>
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

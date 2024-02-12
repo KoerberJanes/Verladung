@@ -1,0 +1,34 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:layout="sap.ui.layout"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    displayBlock="true">
+   <Dialog id="sendConsoleLogToBackendDialog" initialFocus="sendConsoleLogDialogInput" afterClose="setFocusDialogClose">
+        <customHeader>
+            <!--custom Header Items-->
+            <Bar id="sendConsoleLogDialogLogBar">
+                <contentLeft>
+                    <Title id="sendConsoleLogDialogLog" text="{i18n>sendErrorDialogTitle}"></Title>
+                </contentLeft>
+            </Bar>
+        </customHeader>
+            <content>
+                <form:SimpleForm id="sendConsoleLogDialogForm" editable="true" layout="ResponsiveGridLayout" title="" labelSpanXL="2" labelSpanL="2" labelSpanM="2">
+                    <form:content>
+                        <Label id="sendConsoleLogDialogLabel" text="{i18n>customErrorDescription}"></Label>
+                        <TextArea id="sendConsoleLogDialogInput" />
+                    </form:content>
+                </form:SimpleForm>
+            </content>
+
+            <beginButton>
+                <Button id="btnSendConsoleLogDialogSend" text="{i18n>send}" press="onSendErrorsToBackend"></Button>
+            </beginButton>
+            
+            <endButton>
+                <Button id="btnSendConsoleLogDialobAbort" text="{i18n>abort}" press="onSendErrorsToBackendDialogClose"></Button>
+            </endButton>
+            
+        </Dialog>
+</core:FragmentDefinition>

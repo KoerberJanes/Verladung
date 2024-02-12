@@ -1,0 +1,84 @@
+<mvc:View controllerName="suptpverladung2.0.controller.TourConclusion"
+    xmlns:vbm="sap.ui.vbm" 
+    xmlns:mvc="sap.ui.core.mvc" 
+    xmlns="sap.m"
+    xmlns:ndc="sap.ndc"
+    xmlns:layout="sap.ui.layout"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    xmlns:dnd="sap.ui.core.dnd" 
+    xmlns:DragNDrop="DragNDrop"
+    xmlns:ci="suptpverladung2.0.controller"
+    xmlns:u="sap.ui.unified"
+    displayBlock="true">
+    <Page id="tourConclusionPage" title="{i18n>tourConclusionTitle}">
+        <customHeader>
+                <!--custom Header Items-->
+                <Bar id="TourConclusionHeaderBar">
+                    <contentLeft>
+                        <!--linke Buttons-->
+                    </contentLeft>
+
+                    <contentMiddle>
+                        <Title id="TourConclusionTitle" text="{i18n>tourConclusionTitle}"/>
+                    </contentMiddle>
+
+                    <contentRight>
+                        <Button id="ErrorToBackendbtn_5" icon="sap-icon://upload-to-cloud" tooltip="ErrorLog ans Backend schicken" type="Emphasized" press="onSendErrorsToBackendDialogOpen" visible="true"/>
+                        <Button id="TourConclusionKeyboardButton" icon="sap-icon://keyboard-and-mouse" type="Emphasized" press="ChangeFromManToScan">
+                        </Button>
+                    </contentRight>
+                </Bar>
+            </customHeader>
+            <content>
+
+                <form:SimpleForm id="tourConclusionForm_0" editable="true" layout="ResponsiveGridLayout" title="" labelSpanXL="2" labelSpanL="2" labelSpanM="2">
+					<form:content>
+                        <Text id="TourConclusionText" text="{i18n>tourConclusionTitle}" textAlign="Left"></Text>
+                    </form:content>
+                </form:SimpleForm>
+
+                        <ScrollContainer id="TourConclusionScrollContainer" height="80%" vertical="true">
+                            <Tree id="TourConclusionTree" items="{ClosingNves>/results}" selectionChange="onSelectionChange" sticky="HeaderToolbar" toggleOpenState="">
+                                 <headerToolbar>
+                                    <OverflowToolbar id="ClosingTreeToolbar">
+                                        <Title id="ClosingTreeTitle" text="" level="H2"/> 
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <StandardTreeItem title="{ClosingNves>Description}"/>
+                            </Tree>
+                        </ScrollContainer>
+
+                <form:SimpleForm id="tourConclusionForm_1" editable="true" layout="ResponsiveGridLayout" title="" labelSpanXL="2" labelSpanL="2" labelSpanM="2">
+                    <form:content>
+                        <Label id="ScanInputClosingLabel" text="{i18n>ScanInputNve}"></Label>
+                        <ci:CustomInput id="ScanInputClosingNve" value="" submit="findEnteredClearedNve" type="Number" placeholder="{i18n>ScanInputNve}" tooltip="{i18n>keyboardDisabled}">
+                            <ci:attributes>
+                                <core:CustomData key="inputmode" value="none"/>
+                            </ci:attributes>
+                        </ci:CustomInput>
+
+                        <Label id="ManInputClosingLabel" text="{i18n>ManInputNve}" visible="false"></Label>
+                        <Input id="ManInputClosingNve" submit="findEnteredClearedNve" type="Number" placeholder="{i18n>ManInputNve}" visible="false" tooltip="{i18n>keyboardEnabled}" />
+
+                    </form:content>
+                </form:SimpleForm>
+
+            </content>
+            <footer>
+                <Bar id="TourConclusionFooterBar">
+                    <contentLeft>
+                        <!--linke Buttons-->
+                    </contentLeft>
+                    <contentRight>
+                        <!--reche Buttons-->
+                        <Button id="btnOverview" type="Emphasized" text="{i18n>overview}" press="onNavigationForward">
+                            <customData>
+                                <core:CustomData key="target" value="selectTourPage"/>
+                            </customData>
+                        </Button>
+                    </contentRight>
+                </Bar>
+            </footer>
+        </Page>
+</mvc:View>

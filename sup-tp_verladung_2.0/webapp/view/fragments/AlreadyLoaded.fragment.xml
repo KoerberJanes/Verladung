@@ -1,0 +1,38 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:layout="sap.ui.layout"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    displayBlock="true">
+   <Dialog id="alreadyLoadedDialog" initialFocus="" afterClose="">
+        <customHeader>
+            <!--custom Header Items-->
+            <Bar id="aleradyLoadedDialogHeaderBar">
+                <contentLeft>
+                    <Title id="alreadyLoadedDialogTitle" text="{i18n>alreadyLoadedDialogTitle}"></Title>
+                </contentLeft>
+            </Bar>
+        </customHeader>
+        <content>
+            <form:SimpleForm id="alreadyLoadedDialogForm" editable="true" layout="ResponsiveGridLayout" title="" labelSpanXL="2" labelSpanL="2" labelSpanM="2">
+                <form:content>
+                <Label id="alreadyLoadedDialogExidvLabel" text="{i18n>NveExidv}"></Label>
+                <Input id="alreadyLoadedDialogExidvInput" value="{alreadyLoadedModel>/info/Exidv}" editable="false"></Input>
+                <Label id="alreadyLoadedDialogCustomerLabel" text="{i18n>CustomerInformation}"></Label>
+                <Input id="alreadyLoadedDialogCustomerInput" value="{alreadyLoadedModel>/info/Customer}" editable="false"></Input>
+                <Label id="alreadyLoadedDialogErrorLabel" text="{i18n>ChooseErrorReason}"></Label>
+                <Select id="DialogAlreadyLoadedSelect"></Select>
+                </form:content>
+            </form:SimpleForm>
+        </content>
+
+        <beginButton>
+            <Button id="alreadyLoadedDialogAccept" text="{i18n>confirm}" press="onNveWasLoaded"></Button>
+        </beginButton>
+        
+        <endButton>
+            <Button id="alreadyLoadedDialogClose" text="{i18n>abort}" press="onAlreadyLoadedDialogClose"></Button>
+        </endButton>
+                
+    </Dialog>
+</core:FragmentDefinition>

@@ -1,0 +1,76 @@
+<mvc:View controllerName="suptpverladung2.0.controller.NveHandling"
+    xmlns:vbm="sap.ui.vbm" 
+    xmlns:mvc="sap.ui.core.mvc" 
+    xmlns="sap.m"
+    xmlns:ndc="sap.ndc"
+    xmlns:layout="sap.ui.layout"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    xmlns:dnd="sap.ui.core.dnd" 
+    xmlns:DragNDrop="DragNDrop"
+    xmlns:ci="suptpverladung2.0.controller"
+    xmlns:u="sap.ui.unified"
+    displayBlock="true">
+        <Page id="nveHandlingPage" title="{i18n>nveHandling}">
+            <customHeader>
+                <!--custom Header Items-->
+                <Bar id="NveHandlingHeaderBar">
+                    <contentLeft>
+                        <Button id="btnBackStops" icon="sap-icon://nav-back" type="Emphasized" press="onOpenNavigationBackDialog"><!--text="{i18n>backStops}" -->
+                        </Button>
+                    </contentLeft>
+
+                    <contentMiddle>
+                        <Title id="NveHandlingPageTitle" text="{i18n>nveHandlingPageTitle}"/>
+                    </contentMiddle>
+
+                    <contentRight>
+                        <Button id="ErrorToBackendbtn_2" icon="sap-icon://upload-to-cloud" tooltip="ErrorLog ans Backend schicken" type="Emphasized" press="onSendErrorsToBackendDialogOpen" visible="true"/>
+                        <Button id="nveHandlingKeyboardButton" icon="sap-icon://keyboard-and-mouse" type="Emphasized" press="ChangeFromManToScan">
+                        </Button>
+                    </contentRight>
+                </Bar>
+            </customHeader>
+            <content>
+
+                <ScrollContainer id="ScrollcontainerNves" height="80%" vertical="true">
+                    <Tree id="TreeOfNves" items="{NVEs>/results}" mode="SingleSelectLeft" selectionChange="onSelectionChange" sticky="HeaderToolbar" toggleOpenState="onNveDescriptionSetting">
+                        <headerToolbar>
+                            <OverflowToolbar id="OvtbNves">
+                                <Title id="titleTreeOfNVEs" text="{i18n>NveTreeStandardText}" level="H2"/> 
+                                    <ToolbarSpacer id="ToolbarSpacer_2"/>
+                                <Switch id="switchEinpackenOderVerladen" customTextOff="Verl" customTextOn="Einp" change="onSwitchChange" />
+                                <Button id="btnTakePhoto" type="Emphasized" icon="sap-icon://add-photo" press="chekIfNveIsSelectedForPhoto"></Button>
+                            </OverflowToolbar>
+                        </headerToolbar>
+                        <StandardTreeItem title="{NVEs>Description}"/>
+                    </Tree>
+                </ScrollContainer>
+
+                <form:SimpleForm id="nveHandlingForm" editable="true" layout="ResponsiveGridLayout" title="" labelSpanXL="2" labelSpanL="2" labelSpanM="2">
+                    <form:content>
+                        <ci:CustomInput id="ScanInputNve" value="" submit="onFindEnteredNve" type="Number" placeholder="{i18n>ScanInputNve}" tooltip="{i18n>keyboardDisabled}">
+                            <ci:attributes>
+                                <core:CustomData key="inputmode" value="none"/>
+                            </ci:attributes>
+                        </ci:CustomInput>
+                        <Input id="ManInputNve" submit="onFindEnteredNve" type="Number" placeholder="{i18n>ManInputNve}" visible="false" tooltip="{i18n>keyboardEnabled}"/>
+                    </form:content>
+                </form:SimpleForm>
+            </content>
+            <footer>
+                <Bar id="NveHandlingFooterBar">
+                    <contentLeft>
+                        <!--linke Buttons-->
+                        <Button id="btnNavigationToPackaging" type="Emphasized" text="{i18n>toPackaging}" press="onNavigateToPackaging"></Button>
+                    </contentLeft>
+                    <contentRight>
+                        <!--rechte Buttons-->
+                        <Button id="btnklaergrund" type="Emphasized" text="{i18n>KlaerReason}" press="onCheckIfNveIsSelected"></Button>
+                        <Button id="btnLoadingToCustomer" type="Emphasized" text="{i18n>loadingToCustomer}" press="onNavigateToOtherCustomer">
+                        </Button>
+                    </contentRight>
+                </Bar>
+            </footer>
+        </Page>
+</mvc:View>

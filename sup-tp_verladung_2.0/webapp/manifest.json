@@ -1,0 +1,269 @@
+{
+  "_version": "1.49.0",
+  "sap.app": {
+    "id": "suptpverladung2.0",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:basic",
+      "version": "1.10.0",
+      "toolsId": "7082231b-2510-40f1-95a8-d581e793e16a"
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "dependencies": {
+      "minUI5Version": "1.120.1",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.f": {},
+        "sap.suite.ui.generic.template": {},
+        "sap.ui.comp": {},
+        "sap.ui.generic.app": {},
+        "sap.ui.table": {},
+        "sap.ushell": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "suptpverladung2.0.i18n.i18n"
+        }
+      },
+      "Tour": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "results": []
+        }
+      },
+      "Stops": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "results": []
+        }
+      },
+      "InterdepotNVEs": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "results": []
+        }
+      },
+      "ClearedNves": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "results": []
+        }
+      },
+      "LoadedNves": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "results": []
+        }
+      },
+      "AllNvesOfTour": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "results": []
+        }
+      },
+      "NvePhotoModel": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "photo": {}
+        }
+      },
+      "TourParameterModel": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "tour": {}
+        }
+      },
+      "StopParameterModel": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "Stop": {}
+        }
+      },
+      "CaseEvents": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "results": []
+        }
+      },
+      "NVEs": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "results": []
+        }
+      },
+      "ClosingNves": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "results": []
+        }
+      },
+      "alreadyLoadedModel": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "info": {}
+        }
+      },
+      "alreadyClearedModel": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "info": {}
+        }
+      },
+      "clearingDialogModel": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "info": {}
+        }
+      },
+      "StopInfoModel": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "info": {}
+        }
+      },
+      "SelectModel": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "selectOptions": []
+        }
+      },
+      "ErrorLog": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "errors": []
+        }
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "viewType": "XML",
+        "async": true,
+        "viewPath": "suptpverladung2.0.view",
+        "controlAggregation": "pages",
+        "controlId": "app",
+        "clearControlAggregation": false
+      },
+      "routes": [
+        {
+          "name": "RouteTourSelection",
+          "pattern": ":?query:",
+          "target": [
+            "TargetTourSelection"
+          ]
+        },
+        {
+          "name": "RouteStopsOfTour",
+          "pattern": "RouteStopsOfTour/{SelectedTourModel},{sStopSequenceChangeable},{bManuelInput},{IvIdEumDev},{IvIdTr}",
+          "target": [
+            "TargetStopsOfTour"
+          ]
+        },
+        {
+          "name": "RouteNveHandling",
+          "pattern": "RouteNveHandling/{sStopSequenceChangeable},{bManuelInput},{IvIdEumDev},{IvIdTr}",
+          "target": [
+            "TargetNveHandling"
+          ]
+        },
+        {
+          "name": "RouteInterdepotTour",
+          "pattern": "RouteInterdepotTour/{sStopSequenceChangeable},{bManuelInput},{IvIdEumDev},{IvIdTr}",
+          "target": [
+            "TargetInterdepotTour"
+          ]
+        },
+        {
+          "name": "RouteToCustomer",
+          "pattern": "RouteToCustomer",
+          "target": [
+            "TargetToCustomer"
+          ]
+        }
+      ],
+      "targets": {
+        "TargetTourSelection": {
+          "viewType": "XML",
+          "transition": "slide",
+          "clearControlAggregation": false,
+          "viewId": "selectTourPage",
+          "viewName": "TourSelection"
+        },
+        "TargetStopsOfTour": {
+          "viewType": "XML",
+          "transition": "slide",
+          "clearControlAggregation": false,
+          "viewId": "stopSortPage",
+          "viewName": "StopsOfTour"
+        },
+        "TargetNveHandling": {
+          "viewType": "XML",
+          "transition": "slide",
+          "clearControlAggregation": false,
+          "viewId": "nveHandlingPage",
+          "viewName": "NveHandling"
+        },
+        "TargetToCustomer": {
+          "viewType": "XML",
+          "transition": "slide",
+          "clearControlAggregation": false,
+          "viewId": "toCustomerPage",
+          "viewName": "ToCustomer"
+        },
+        "TargetInterdepotTour": {
+          "viewType": "XML",
+          "transition": "slide",
+          "clearControlAggregation": false,
+          "viewId": "interdepotNvePage",
+          "viewName": "InterdepotTour"
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "suptpverladung2.0.view.App",
+      "type": "XML",
+      "async": true,
+      "id": "App"
+    }
+  }
+}

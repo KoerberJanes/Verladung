@@ -1,0 +1,33 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:layout="sap.ui.layout"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    displayBlock="true">
+   <Dialog id="toCustomerPhotoDialog" initialFocus="" afterClose="">
+        <customHeader>
+            <!--custom Header Items-->
+            <Bar id="toCustomerPhotoDialogBar">
+                <contentLeft>
+                    <Title id="toCustomerPhotoDialogTitle" text="{i18n>photoNveDialog}"></Title>
+                </contentLeft>
+            </Bar>
+        </customHeader>
+            <content>
+                <form:SimpleForm id="toCustomerPhotoDialogForm" editable="true" layout="ResponsiveGridLayout" title="" labelSpanXL="2" labelSpanL="2" labelSpanM="2">
+                    <form:content>
+                        <!--<Label id="toCustomerPhotoDialogLabel" text="{i18n>NveLabel}" wrapping="true"></Label>-->
+                        <Input id="toCustomerPhotoDialogInput" value="{NvePhotoModel>/photo/Description}" submit="findEnteredClearedNve" placeholder="{i18n>inputPlaceholder}" tooltip="" editable="false"></Input>
+                    </form:content>
+                </form:SimpleForm>
+            </content>
+            <buttons>
+                <Button id="TestButton" press="uploadBase64Picture" text="TestFunktionalität"></Button>
+                <Button id="btnToCustomerPhotoDialogNewPhoto" press="onRedoPhoto" icon="sap-icon://redo"></Button> 
+                <Button id="btnToCustomerPhotoDialogSendPhoto" press="onSendPhoto" icon="sap-icon://paper-plane"></Button>
+                <Button id="btnToCustomerPhotoDialogCapturePhoto" press="onCapturePhoto" icon="sap-icon://camera"></Button> 
+                <Button id="btnToCustomerPhotoDialogAbortPhoto" press="onAbortPhoto" icon="sap-icon://decline"></Button>
+            </buttons>
+
+        </Dialog>
+</core:FragmentDefinition>

@@ -1,0 +1,74 @@
+<mvc:View controllerName="suptpverladung2.0.controller.StopsOfTour"
+    xmlns:vbm="sap.ui.vbm" 
+    xmlns:mvc="sap.ui.core.mvc" 
+    xmlns="sap.m"
+    xmlns:ndc="sap.ndc"
+    xmlns:layout="sap.ui.layout"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    xmlns:dnd="sap.ui.core.dnd" 
+    xmlns:DragNDrop="DragNDrop"
+    xmlns:ci="suptpverladung2.0.controller"
+    xmlns:u="sap.ui.unified"
+    displayBlock="true">
+    <Page id="stopSortPage" title="{i18n>changeStopOrder}">
+             <customHeader>
+                <!--custom Header Items-->
+                <Bar id="StopSortPageHeaderBar">
+                    <contentLeft>
+                        <Button id="btnBackTour" icon="sap-icon://nav-back" type="Emphasized" press="onOpenNavigationBackDialog"></Button>
+                    </contentLeft>
+
+                    <contentMiddle>
+                        <Title id="StopSortPageTitle" text="{i18n>StopSortPageTitle}"/>
+                    </contentMiddle>
+
+                    <contentRight>
+                        <Button id="ErrorToBackendbtn_1" icon="sap-icon://upload-to-cloud" tooltip="ErrorLog ans Backend schicken" type="Emphasized" press="onSendErrorsToBackendDialogOpen" visible="true"/>
+                        <Button id="stopSortKeyboardButton" icon="sap-icon://keyboard-and-mouse" type="Emphasized" press="ChangeFromManToScan">
+                        </Button>
+                    </contentRight>
+                </Bar>
+            </customHeader>
+            <content>
+                <ScrollContainer id="ScrollContainerStopList" height="80%" vertical="true">
+                    <ListBase id="stopList" sticky="HeaderToolbar" itemPress="getSelectedCustomerInformation" items="{Stops>/results}" mode="SingleSelectLeft" selectionChange="onSelectionChange">
+                        <headerToolbar>
+                            <OverflowToolbar id="OvtbStops">
+                                <Button id="bUp" type="Emphasized" icon="sap-icon://navigation-up-arrow" press="checkIfStoppPositionsAreChangeable" tooltip="{i18n>up}"/>
+                                <Button id="bDown" type="Emphasized" icon="sap-icon://navigation-down-arrow" press="checkIfStoppPositionsAreChangeable" tooltip="{i18n>down}"/>
+                                <ToolbarSpacer id="ToolbarSpacer_0"/>
+                                <Button id="bStart" type="Emphasized" icon="sap-icon://back-to-top" press="checkIfStoppPositionsAreChangeable" tooltip="{i18n>start}"/>
+                                <Button id="bEnd" type="Emphasized" icon="sap-icon://download" press="checkIfStoppPositionsAreChangeable" tooltip="{i18n>end}"/>
+                                <ToolbarSpacer id="ToolbarSpacer_1"/>
+                                <Button id="btnReverse" type="Emphasized" icon="sap-icon://synchronize" press="checkIfStoppPositionsAreChangeable" tooltip="{i18n>reverse}"/>
+                            </OverflowToolbar>
+                        </headerToolbar>
+                        <StandardListItem title="{Stops>Description}" type="Navigation" press="CustomerInformation" wrapping="true"/>
+                    </ListBase>
+                </ScrollContainer>
+                <form:SimpleForm id="SortStopForm" editable="true" layout="ResponsiveGridLayout" title="" labelSpanXL="2" labelSpanL="2" labelSpanM="2">
+                    <form:content>
+                        <ci:CustomInput id="ScanInputStops" value="" submit="onScanCustomer" type="Number" placeholder="{i18n>ScanInputStop}" tooltip="{i18n>keyboardDisabled}">
+                            <ci:attributes>
+                                <core:CustomData key="inputmode" value="none"/>
+                            </ci:attributes>
+                        </ci:CustomInput>
+                        <Input id="ManInputStops" submit="onScanCustomer" type="Number" placeholder="{i18n>ManInputStop}" visible="false" tooltip="{i18n>keyboardEnabled}"/>
+                    </form:content>
+                </form:SimpleForm>
+        </content>
+        <footer>
+            <Bar id="StopSortPageFooterBar">
+                <contentLeft>
+                    <!--linke Buttons-->
+                </contentLeft>
+                <contentRight>
+                    <!--reche Buttons-->
+                    <Button id="btnToCustomer" type="Emphasized" text="{i18n>toCustomer}" press="getSelectedCustomer"></Button>
+                    <Button id="btnConfirm" type="Emphasized" text="{i18n>confirm}" press="getLastStopOfList"></Button>
+                </contentRight>
+            </Bar>
+        </footer>
+    </Page>
+</mvc:View>

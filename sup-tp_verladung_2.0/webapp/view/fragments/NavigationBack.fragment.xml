@@ -1,0 +1,32 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:layout="sap.ui.layout"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    displayBlock="true">
+   <Dialog id="NavigationBackDialog" initialFocus="" afterClose="onFocusBackAbort">
+    <customHeader>
+            <!--custom Header Items-->
+            <Bar id="NavigationBackDialogHeaderBar">
+                <contentLeft>
+                    <Title id="NavigationBackDialogTitle" text="{i18n>warning}"></Title>
+                </contentLeft>
+            </Bar>
+        </customHeader>
+        <content>
+        <form:SimpleForm id="alreadyLoadedDialogForm" editable="true" layout="ResponsiveGridLayout" title="" labelSpanXL="2" labelSpanL="2" labelSpanM="2">
+                <form:content>
+                    <Text id="NavigationBackDialogNotification" text="{i18n>confirmation}"></Text>
+                </form:content>
+            </form:SimpleForm>
+        </content>
+
+        <beginButton>
+            <Button id="NavigationBackDialogNo" text="Bestätigen" press="onNavigationBack"></Button>
+        </beginButton>
+        
+        <endButton>
+            <Button id="NavigationBackDialogYes" text="{i18n>back}" press="onCloseNavigationBackDialog"></Button>
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

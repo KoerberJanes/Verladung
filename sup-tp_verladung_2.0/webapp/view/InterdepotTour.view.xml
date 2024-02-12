@@ -1,0 +1,67 @@
+<mvc:View controllerName="suptpverladung2.0.controller.InterdepotTour"
+    xmlns:vbm="sap.ui.vbm" 
+    xmlns:mvc="sap.ui.core.mvc" 
+    xmlns="sap.m"
+    xmlns:ndc="sap.ndc"
+    xmlns:layout="sap.ui.layout"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    xmlns:dnd="sap.ui.core.dnd" 
+    xmlns:DragNDrop="DragNDrop"
+    xmlns:ci="suptpverladung2.0.controller"
+    xmlns:u="sap.ui.unified"
+    displayBlock="true">
+    <Page id="interdepotNvePage" title="{i18n>interdepotNveHandling}">
+            <customHeader>
+                <!--custom Header Items-->
+                <Bar id="InterdepotNvePageHeaderBar">
+                    <contentLeft>
+                    <Button id="btnBackNves" icon="sap-icon://nav-back" type="Emphasized" press="askIfNavBackWasIntentional"><!--text="{i18n>backToNves}"-->
+                        <customData>
+                            <core:CustomData key="target" value="nveHandling"/>
+                        </customData>
+                    </Button>
+                    </contentLeft>
+
+                    <contentMiddle>
+                        <Title id="InterdepotPageTitle" text="{i18n>interdepotPageTitle}"/>
+                    </contentMiddle>
+
+                    <contentRight>
+                        <Button id="ErrorToBackendbtn_4" icon="sap-icon://upload-to-cloud" tooltip="ErrorLog ans Backend schicken" type="Emphasized" press="onSendErrorsToBackendDialogOpen" visible="true"/>
+                    </contentRight>
+                </Bar>
+            </customHeader>
+            <content>
+
+                <ScrollContainer id="ScrollcontainerInterdepotNves" height="80%" vertical="true">
+                    <Tree id="TreeOfInterdepotNves" items="{InterdepotNVEs>/results}" mode="SingleSelectLeft" selectionChange="onSelectionChange" sticky="HeaderToolbar" toggleOpenState="onNveDescriptionSetting">
+                        <headerToolbar>
+                            <OverflowToolbar id="InterdepotToolbar">
+                                <Title id="InterdepotTreeTitle" text="" level="H2"/> 
+                            </OverflowToolbar>
+                        </headerToolbar>
+                        <StandardTreeItem title="{InterdepotNVEs>Description}"/>
+                    </Tree>
+                </ScrollContainer>
+
+                <form:SimpleForm id="InterdepotNveForm" editable="true" layout="ResponsiveGridLayout" title="" labelSpanXL="2" labelSpanL="2" labelSpanM="2">
+					<form:content>
+                        <!--Existiert nur, weil teil von Bugfix dashier über lässt und man es eventuell nochmal gebrauchen kann-->
+                    </form:content>
+                </form:SimpleForm>
+            </content>
+            <footer>
+                <Bar id="InterdepotNvePageFooterBar">
+                    <contentLeft>
+                        <!--linke Buttons-->
+                    </contentLeft>
+                    <contentRight>
+                        <!--rechte Buttons-->
+                        <Button id="btnInterdepotStopLoading" type="Emphasized" text="{i18n>interdepotStop}" press="onLoadInterdepotNves">
+                        </Button>
+                    </contentRight>
+                </Bar>
+            </footer>
+        </Page>
+</mvc:View>

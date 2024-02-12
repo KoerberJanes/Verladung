@@ -1,0 +1,63 @@
+<mvc:View controllerName="suptpverladung2.0.controller.TourSelection"
+    xmlns:vbm="sap.ui.vbm" 
+    xmlns:mvc="sap.ui.core.mvc" 
+    xmlns="sap.m"
+    xmlns:ndc="sap.ndc"
+    xmlns:layout="sap.ui.layout"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    xmlns:dnd="sap.ui.core.dnd" 
+    xmlns:DragNDrop="DragNDrop"
+    xmlns:ci="suptpverladung2.0.controller"
+    xmlns:u="sap.ui.unified"
+    displayBlock="true">
+    <Page id="selectTourPage" title="{i18n>selectTourPageTitle}">
+            <customHeader>
+                <Bar id="TourauswahlHeaderBar">
+                <!--custom Header Items-->
+                    <contentLeft>
+                    </contentLeft>
+                    <contentMiddle>
+                        <Title id="selectTourPageTitle" text="{i18n>selectTourPageTitle}"/>
+                    </contentMiddle>
+                    <contentRight>
+                        <Button id="ErrorToBackendbtn_0" icon="sap-icon://upload-to-cloud" tooltip="ErrorLog ans Backend schicken" type="Emphasized" press="onSendErrorsToBackendDialogOpen" visible="true"/>
+                    </contentRight>
+                </Bar>
+            </customHeader>
+            
+            <content>
+                <form:SimpleForm id="selectTourPageForm_0" editable="true" title="" breakpointXL="2000" layout="ResponsiveGridLayout" minWidth="200" labelMinWidth="300" breakpointM="2000">
+                    <form:content>
+                        <Label id="LableDriver" class="Label" text="{i18n>driver}"/>
+                        <Input id="iFahrer" class="Input" value="{Tour>/results/0/DrvDesc}" editable="false"/>
+                        <Label id="LableLKW" class="Label" text="{i18n>LKW}"/>
+                        <Input id="iLkw" class="Input" editable="false"/>
+                    </form:content>
+                </form:SimpleForm>
+
+                <List id="LTourAuswahl" sticky="HeaderToolbar" mode="SingleSelectMaster" growing="true" growingThreshold="10" busyIndicatorDelay="500" enableBusyIndicator="true" noDataText="{i18n>noTours}" items="{Tour>/results}" >
+                    <headerToolbar>
+                        <OverflowToolbar id="OvtbTourselect">
+                            <Title id="OvtbTitle" text="{i18n>selectTourPageTitle}" level="H2"/>
+                        </OverflowToolbar>
+                    </headerToolbar>
+                        
+                    <StandardListItem title="{Tour>Description}" wrapping ="true"/>
+                </List>
+            </content>
+            <footer>
+                <Bar id="TourauswahlFooterBar">
+                    <contentLeft>
+                        <!--linke Buttons-->
+                        <Button id="refreshbutton" type="Emphasized" text="{i18n>refresh}" press="onRefreshTours"/>
+                    </contentLeft>
+                    <contentRight>
+                        <!--reche Buttons-->
+                        <Button id="btnWeiter" type="Emphasized" text="{i18n>continue}" press="onCheckIfTourSelected">
+                        </Button>
+                    </contentRight>
+                </Bar>
+            </footer>
+        </Page>
+</mvc:View>

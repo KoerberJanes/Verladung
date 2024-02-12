@@ -1,0 +1,37 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:layout="sap.ui.layout"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    displayBlock="true">
+   <Dialog id="klaergrundDialog" title="Klärgrund angeben" initialFocus="" afterClose="">
+        <customHeader>
+            <!--custom Header Items-->
+            <Bar id="KlaergrundDialogHeaderBar">
+                <contentLeft>
+                    <Title id="clearingDialogTitle" text="{i18n>clearingDialogTitle}"></Title>
+                </contentLeft>
+            </Bar>
+        </customHeader>
+        <content>
+            <form:SimpleForm id="KlaergrundDialogForm" editable="true" layout="ResponsiveGridLayout" title="" labelSpanXL="2" labelSpanL="2" labelSpanM="2">
+                <form:content>
+                    <Label id="DialogClearingLabelInformation" text="{i18n>PackingInformation}"></Label>
+                    <Input id="DialogClearingInputInformation" value="{clearingDialogModel>/info/Description}" placeholder="{i18n>NveInformationsPlaceholder}" editable="false"/>
+                    <Label id="DialogClearingLabelCustomerInformation" text="{i18n>CustomerInformation}"></Label>
+                    <Input id="DialogClearingInputCustomerInformation" value="{clearingDialogModel>/info/Customer}" placeholder="{i18n>CustomerInformationsPlaceholder}" editable="false" ></Input>
+                    <Label id="DialogClearingLabelReason" text="{i18n>ChooseClearingReason}"></Label>
+                    <Select id="DialogClearingSelect"></Select>
+                </form:content>
+            </form:SimpleForm>
+        </content>
+
+        <beginButton>
+            <Button id="DialogClearingButtonAccept" text="{i18n>confirm}" press="findNveAboutToClear"></Button>
+        </beginButton>
+        
+        <endButton>
+            <Button id="DialogClearingButtonClose" text="{i18n>abort}" press="onClearingDialogClose"></Button>
+        </endButton>      
+    </Dialog>
+</core:FragmentDefinition>

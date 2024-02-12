@@ -1,0 +1,38 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:layout="sap.ui.layout"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    displayBlock="true">
+   <Dialog id="alreadyClearedDialog" visible="false" title="{alreadyClearedDialogTitle}" initialFocus="" afterClose="">
+    <customHeader>
+        <!--custom Header Items-->
+        <Bar id="aleradyClearedDialogHeaderBar">
+            <contentLeft>
+                <Title id="alreadyClearedDialogTitle" text="{i18n>alreadyClearedDialogTitle}"></Title>
+            </contentLeft>
+        </Bar>
+    </customHeader>
+        <content>
+            <form:SimpleForm id="alreadyClearedDialogForm" editable="true" layout="ResponsiveGridLayout" title="" labelSpanXL="2" labelSpanL="2" labelSpanM="2">
+                <form:content>
+                <Label id="alreadyClearedDialogExidvLabel" text="{i18n>NveExidv}"></Label>
+                <Input id="alreadyClearedDialogExidvInput" value="{alreadyClearedModel>/info/Exidv}" editable="false"></Input>
+                <Label id="alreadyClearedDialogCustomerLabel" text="{i18n>CustomerInformation}"></Label>
+                <Input id="alreadyClearedDialogCustomerInput" value="{alreadyClearedModel>/info/Customer}" editable="false"></Input>
+                <Label id="alreadyClearedDialogErrorReasonLabel" text="{i18n>clearingReason}"></Label>
+                <Input id="alreadyClearedDialogClearingReasonInput" value="{alreadyClearedModel>/info/ClearingReason}" editable="false"></Input>
+                </form:content>
+            </form:SimpleForm>
+        </content>
+
+        <beginButton>
+            <Button id="alreadyClearedDialogAccept" text="{i18n>confirm}" press="onNveWasCleared"></Button>
+        </beginButton>
+        
+        <endButton>
+            <Button id="alreadyClearedDialogClose" text="{i18n>abort}" press="onAlreadyClearedDialogClose"></Button>
+        </endButton>
+        
+    </Dialog>
+</core:FragmentDefinition>

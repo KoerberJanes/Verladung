@@ -1,0 +1,74 @@
+<mvc:View controllerName="suptpverladung2.0.controller.ToCustomer"
+    xmlns:vbm="sap.ui.vbm" 
+    xmlns:mvc="sap.ui.core.mvc" 
+    xmlns="sap.m"
+    xmlns:ndc="sap.ndc"
+    xmlns:layout="sap.ui.layout"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    xmlns:dnd="sap.ui.core.dnd" 
+    xmlns:DragNDrop="DragNDrop"
+    xmlns:ci="suptpverladung2.0.controller"
+    xmlns:u="sap.ui.unified"
+    displayBlock="true">
+    <Page id="toCustomerPage">
+            <customHeader>
+                <Bar id="toCustomerPageHeaderBar">
+                    <contentLeft>
+                        <Button id="btnBackTourToCustomer" icon="sap-icon://nav-back" type="Emphasized" press="onOpenNavigationBackDialog"><!--text="{i18n>backTour}"-->
+                        </Button>
+                    </contentLeft>
+                    
+                    <contentMiddle>
+                        <Title id="ToCustomerPageTitle" text="{i18n>toCustomerPageTitle}"/>
+                    </contentMiddle>
+
+                    <contentRight>
+                        <Button id="ErrorToBackendbtn_3" icon="sap-icon://upload-to-cloud" tooltip="ErrorLog ans Backend schicken" type="Emphasized" press="onSendErrorsToBackendDialogOpen" visible="true"/>
+                        <Button id="toCustomerKeyboardButton" icon="sap-icon://keyboard-and-mouse" type="Emphasized" press="ChangeFromManToScan">
+                        </Button>
+                    </contentRight>
+                </Bar>
+            </customHeader>
+            <content>
+
+                <ScrollContainer id="ScrollContainerStopListToCustomer" height="80%" vertical="true">
+                    <ListBase id="stopListToCustomer" itemPress="onCustomerInfoDialogOpen" items="{Stops>/results}" mode="SingleSelectLeft" sticky="HeaderToolbar" selectionChange="onSelectionChange">
+                        <headerToolbar>
+                            <OverflowToolbar id="OvtbStopsToCustomer">
+                                <Button id="bUpToCustomer" type="Emphasized" icon="sap-icon://navigation-up-arrow" press="onUp" tooltip="{i18n>up}"/>
+                                <Button id="bDownToCustomer" type="Emphasized" icon="sap-icon://navigation-down-arrow" press="onDown" tooltip="{i18n>down}"/>
+                                <ToolbarSpacer id="ToolbarSpacer_3"/>
+                                <Button id="bStartToCustomer" type="Emphasized" icon="sap-icon://back-to-top" press="onStart" tooltip="{i18n>start}"/>
+                                <Button id="bEndToCustomer" type="Emphasized" icon="sap-icon://download" press="onEnd" tooltip="{i18n>end}"/>
+                                <Button id="btnReverseToCustomer" type="Emphasized" icon="sap-icon://synchronize" press="onReverse" tooltip="{i18n>reverse}"/>
+                            </OverflowToolbar>
+                        </headerToolbar>
+                        <StandardListItem title="{Stops>Description}" type="Navigation" press="CustomerInformation" wrapping="true"/>
+                    </ListBase>
+                </ScrollContainer>
+
+                    <form:SimpleForm id="toCustomerPageForm" editable="true" layout="ResponsiveGridLayout" title="" labelSpanXL="2" labelSpanL="2" labelSpanM="2">
+                        <form:content>
+                        <ci:CustomInput id="ScanInputStopsToCustomer" value="" submit="onScanCustomer" type="Number" placeholder="{i18n>ScanInputStop}" tooltip="{i18n>keyboardDisabled}">
+                            <ci:attributes>
+                                <core:CustomData key="inputmode" value="none"/>
+                            </ci:attributes>
+                        </ci:CustomInput>
+                        <Input id="ManInputStopsToCustomer" submit="onScanCustomer" type="Number" placeholder="{i18n>ManInputStop}" visible="false" tooltip="{i18n>keyboardEnabled}"/>
+                    </form:content>
+                </form:SimpleForm>
+            </content>
+            <footer>
+                <Bar id="StopSortPageFooterBarToCustomer">
+                    <contentLeft>
+                        <!--linke Buttons-->
+                    </contentLeft>
+                    <contentRight>
+                        <!--reche Buttons-->
+                        <Button id="btnToCustomerAlternate" type="Emphasized" text="{i18n>toCustomer}" press="checkIfCustomerIsSelected"></Button>
+                    </contentRight>
+                </Bar>
+            </footer>
+        </Page>
+</mvc:View>

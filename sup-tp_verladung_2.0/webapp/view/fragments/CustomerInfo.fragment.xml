@@ -1,0 +1,47 @@
+<core:FragmentDefinition
+    xmlns:mvc="sap.ui.core.mvc" 
+    xmlns="sap.m"
+    xmlns:layout="sap.ui.layout"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    displayBlock="true">
+   <Dialog id="customerInfoDialog" initialFocus="CustomerInfoDialogButtonOK" afterClose="setFocusStopSortPage">
+        <customHeader>
+            <!--custom Header Items-->
+            <Bar id="CustomerInfoDialogHeaderBar">
+                <contentLeft>
+                    <Title id="CustomerInfoDialogTitle" text="{i18n>CustomerInfoDialogTitle}"></Title>
+                </contentLeft>
+            </Bar>
+        </customHeader>
+        <content>
+            <form:SimpleForm id="CusomterInfoDialogForm" editable="true" layout="ResponsiveGridLayout" title="" labelSpanXL="2" labelSpanL="2" labelSpanM="2">
+                <form:content>
+                    <Label id="customerInfoDialogLabelName_1" text="{i18n>CustomerName}"></Label>
+                    <Input id="CustomerInfoDialogInputName_1" value="{StopInfoModel>/info/Name1}" editable="false"></Input> <!--Name-->
+                    <Label id="customerInfoDialogLabelAdditionalDelv" text="{i18n>DeliveringInformation}"></Label>
+                    <Input id="CustomerInfoDialogInputAdditionalCustomerInfo" value="{StopInfoModel>/info/Info}" editable="false"></Input> <!--Zusatz-->
+                    <Label id="customerInfoDialogLabelStreet" text="{i18n>Street}"></Label>
+                    <Input id="CustomerInfoDialogInputStreet" value="{StopInfoModel>/info/Street}" editable="false"></Input> <!--Straße-->
+                    <Label id="customerInfoDialogLabelPlz" text="{i18n>Postcode}"></Label>
+                    <Input id="CustomerInfoDialogInputPlz" value="{StopInfoModel>/info/PostCode1}" editable="false"></Input> <!--PLZ-->
+                    <Label id="customerInfoDialogLabelCity_1" text="{i18n>City_1}"></Label>
+                    <Input id="CustomerInfoDialogInputCity_1" value="{StopInfoModel>/info/City_1}" editable="false"></Input> <!--Stadt-->
+                    <Label id="customerInfoDialogLabelCity_2" text="{i18n>City_2}"></Label>
+                    <Input id="CustomerInfoDialogInputCity_2" value="{StopInfoModel>/info/City_2}" editable="false"></Input> <!--Teilort-->
+                    <Label id="customerInfoDialogLabelAdditionalInfo" text="{i18n>AdditionalInformation}"></Label>
+                    <TextArea id="CustomerInfoDialogTextAreaDelvInfo" value="{StopInfoModel>/info/DelvInfo}" editable="false" growing="true" growingMaxLines="5" width="100%"></TextArea> <!--Zusatzinformationen-->
+                    <Button id="CustomerInfoDialogButtonForGeoMap" text="{i18n>openMap}" press="onCustomerInfoGeoMapDialogOpen"></Button><!--setAppearanceForGeoMap-->
+                </form:content>
+            </form:SimpleForm>
+        </content>
+
+        <beginButton>
+            <!--<Button text="Bestätigen" press="onClearingDialogClose"></Button>-->
+        </beginButton>
+        
+        <endButton>
+            <Button id="CustomerInfoDialogButtonOK" text="{i18n>back}" press="onCustomerInfoDialogClose"></Button>
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>
