@@ -106,13 +106,13 @@ sap.ui.define([
             },
 
             setGlobalParameters:function(oParameters){
-                this._sStopParameterModel=oParameters.StopParameterModel;
+                this._sStopParameterModel=this.getOwnerComponent().getModel("StopParameterModel");
                 this._IvIdEumDev=oParameters.IvIdEumDev;
                 this._IvIdTr=oParameters.IvIdTr;
                 
                 this._bManuelInput=(/true/).test(oParameters.bManuelInput); //Kommt als String an, obwohl hier ein Boolean erwartet wird
                 this._bStopSequenceChangeable=(/true/).test(oParameters.sStopSequenceChangeable);
-                var oStop=this.getOwnerComponent().getModel("StopParameterModel").getProperty("/Stop");
+                var oStop=this._sStopParameterModel.getProperty("/Stop");
 
                 this.swapInputMode();
                 this.setNveStoptitle(oStop);
@@ -788,7 +788,6 @@ sap.ui.define([
             },
 
             CheckIfModelIsEmpty:function(){ //Wenn eine NVE verladen wurde soll geprüft werden, ob noch eine NVE zu diesem Stopp existiert
-                //var aTreeNves=this.getView().getModel("NVEs").getProperty("/results");
                 var aTreeNves=this.getOwnerComponent().getModel("NVEs").getProperty("/results");
                 if(aTreeNves.length===0){
                     this.spliceStop("NveHandlingPageTitle"); //Wenn nicht, dann splice diesen Stopp aus der Liste
@@ -804,7 +803,6 @@ sap.ui.define([
             },
 
             checkIfNextStopAvailable:function(){ //Abhängig von der Stopp-Liste wird entweder der nächste Stopp oder die Abschlussübersicht vorbereitet
-                //var aStops=this.getView().getModel("Stops").getProperty("/results");
                 var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
                 
                 if(aStops.length>0){
@@ -827,8 +825,7 @@ sap.ui.define([
             ///////////////////////////////////////
 
             onNavigationBack:function(){
-                this._oRouter.navTo("RouteStopsOfTour",{
-                    SelectedTourModel:"TourParameterModel", 
+                this._oRouter.navTo("RouteStopsOfTour",{ //TourParameterModel
                     sStopSequenceChangeable:this._bStopSequenceChangeable, 
                     bManuelInput:this._bManuelInput,
                     IvIdEumDev:this._IvIdEumDev,
@@ -837,8 +834,7 @@ sap.ui.define([
             },
 
             onNavToInterdepotPage:function(){
-                this._oRouter.navTo("RouteInterdepotTour",{
-                    StopParameterModel:this._sStopParameterModel,
+                this._oRouter.navTo("RouteInterdepotTour",{ //StopParameterModel
                     sStopSequenceChangeable:this._bStopSequenceChangeable, 
                     bManuelInput:this._bManuelInput,
                     IvIdEumDev:this._IvIdEumDev,
@@ -851,7 +847,6 @@ sap.ui.define([
             ///////////////////////////////////////
 
             onOpenNavigationBackDialog: function() {
-                //this.playBeepError();
                 // create dialog lazily
                 this.pDialog ??= this.loadFragment({
                     name: "suptpverladung2.0.view.fragments.NavigationBack"
@@ -861,13 +856,10 @@ sap.ui.define([
             },
 
             onCloseNavigationBackDialog:function(){
-                // note: We don't need to chain to the pDialog promise, since this event handler
-                // is only called from within the loaded dialog itself.
                 this.byId("NavigationBackDialog").close();
             },
 
             onSendErrorsToBackendDialogOpen:function(){ //Öffnen eines Dialoges, weite sind analog zu diesem
-                //this.playBeepError();
                 this.oErrorDialog ??= this.loadFragment({
                     name: "suptpverladung2.0.view.fragments.SendErrorsToBackend"
                 });
@@ -875,9 +867,7 @@ sap.ui.define([
                 this.oErrorDialog.then((oDialog) => oDialog.open());
             },
 
-            onSendErrorsToBackendDialogClose:function(){ //Schließen eines Dialoges, weitere sind analog zu diesem
-                // note: We don't need to chain to the pDialog promise, since this event handler
-                // is only called from within the loaded dialog itself.
+            onSendErrorsToBackendDialogClose:function(){
                 this.byId("sendConsoleLogToBackendDialog").close();
             },
 
@@ -891,8 +881,6 @@ sap.ui.define([
             },
 
             onClearingDialogClose:function(){
-                // note: We don't need to chain to the pDialog promise, since this event handler
-                // is only called from within the loaded dialog itself.
                 this.byId("klaergrundDialog").close();
             },
 

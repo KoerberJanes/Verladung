@@ -134,7 +134,7 @@ sap.ui.define([
             /////////////////////////////
 
             getToursForDriver:function(){ // Touren des angemeldeten Fahrers werden aus dem Backend geholt
-                //this.onBusyDialogOpen();
+                //this.busyDialogOpen();
 
                 var today = new Date();
                 var mm = today.getMonth() + 1; //January is 0!
@@ -187,7 +187,7 @@ sap.ui.define([
             },
 
             sendLog:function(oErrorTextField){ //TODO: Prüfen ob so gewollt
-                //this.onBusyDialogOpen();
+                this.busyDialogOpen();
                 var oModel = this.getView().getModel("TP_VERLADUNG_SRV");
                 var oCreateData = {
                     "IdEumDev": this._IvIdEumDev,
@@ -218,9 +218,12 @@ sap.ui.define([
                 */
 
                 //!Success-Fall
-                oErrorTextField.setValue("");
-                this.showSendingSuccessfullMessage();
-                this.onSendErrorsToBackendDialogClose();
+                setTimeout(() => { 
+                    oErrorTextField.setValue("");
+                    this.busyDialogClose(); 
+                    this.showSendingSuccessfullMessage();
+                    this.onSendErrorsToBackendDialogClose();
+                },250); //Test zum Anzeigen des Lade-Dialogs mit 250ms
             },
 
             ///////////////////////////////////////
@@ -344,7 +347,7 @@ sap.ui.define([
                 this.byId("sendConsoleLogToBackendDialog").close();
             },
 
-            onBusyDialogOpen:function(){ //Dialog um den Lade-Prozess zu visualisieren
+            busyDialogOpen:function(){ //Dialog um den Lade-Prozess zu visualisieren
                 this.oBusyDialog ??= this.loadFragment({
                     name: "suptpverladung2.0.view.fragments.BusyDialog"
                 });

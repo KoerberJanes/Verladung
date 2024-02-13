@@ -65,7 +65,7 @@
                 </contentLeft>
                 <contentRight>
                     <!--reche Buttons-->
-                    <Button id="btnToCustomer" type="Emphasized" text="{i18n>toCustomer}" press="getSelectedCustomer"></Button>
+                    <Button id="btnToCustomer" type="Emphasized" text="{i18n>toCustomer}" press="onToCustomer"></Button>
                     <Button id="btnConfirm" type="Emphasized" text="{i18n>confirm}" press="getLastStopOfList"></Button>
                 </contentRight>
             </Bar>

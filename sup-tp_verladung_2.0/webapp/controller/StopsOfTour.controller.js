@@ -57,9 +57,6 @@ sap.ui.define([
                 function (oEvent) {
                     this.setFocusStopSortPage(); //Fokus Methode für die jeweiligen Felder
                 }.bind(this));
-
-                //this.setGeoMapProvider(); //Setzen der Eigenschaften für die GeoMap
-                //this.addCameraPlayerToCameraDialog(); //Erstellen des HTML Elements für den CameraStream (Foto einer NVE)
             },
 
             initiateScanner:function(){
@@ -88,17 +85,16 @@ sap.ui.define([
                 this._oTour=this.getView().getModel("TourParameterModel").getProperty("/tour");
                 this._bStopSequenceChangeable=oParameters.sStopSequenceChangeable;
 
-                this._bManuelInput=(/true/).test(oParameters.bManuelInput); //Kommt als String an, obwohl hier ein Boolean erwartet wird
+                this._bManuelInput=(/true/).test(oParameters.bManuelInput); //wird von String zu Boolean abgeändert
                 this._IvIdEumDev=oParameters.IvIdEumDev;
                 this._IvIdTr=oParameters.IvIdTr;
                 this._navigationHandler.setGlobalValuables(this._bStopSequenceChangeable, this._bManuelInput, this._IvIdEumDev, this._IvIdTr, this._oRouter);
                 this.swapInputMode();
                 this.getTourStops(this._oTour);
                 this.setTourTitle(this._oTour);
-                //Fokus ist nicht initial in den Eingabefeldern! --> Prüfung 
             },
 
-            ChangeFromManToScan:function(){
+            ChangeFromManToScan:function(){ //Vorbereitung zum Wechseln des Eingabemodus
 
                 if(this._bManuelInput){ //Ist der Eingabemodus von Hand?
                     this._bManuelInput=false
@@ -109,7 +105,7 @@ sap.ui.define([
                 this.swapInputMode();
             },
 
-            swapInputMode:function(){ //Labels wurden aus Platz-Gründen entfernt --> Der Wechsel zwischen custom Inputfeldern und den Normalen wird vollzogen
+            swapInputMode:function(){ //Austauschen der Inputfelder
                 
                 if(this._bManuelInput){
                     this.getView().byId("ScanInputStops").setVisible(false);
@@ -137,7 +133,7 @@ sap.ui.define([
             ///////////////////////////////////////
 
             getTourStops:function(oModelStop){ //Erhalten der Stopps einer Tour aus dem Backend
-                //this.onBusyDialogOpen();
+                this.busyDialogOpen();
                 var IdTr=oModelStop.IdTr;
                 //var sPathPos = "/GetStopsByTourSet(IvIdEumDev='" + this._IvIdEumDev + "',IvIdTr='" + IdTr + "')"; 
                 
@@ -150,7 +146,7 @@ sap.ui.define([
                     },
 
                     success: function (oData) {
-
+                        this.busyDialogClose();
                         var aRecievedStops=oData.GetStopsByTourToStopinfo.results;
 
                         if(aRecievedStops.length===0){
@@ -161,7 +157,7 @@ sap.ui.define([
 
                     }.bind(this),
                     error:function(oError){
-                        //Anscheinend keine Funktion?
+                        this.busyDialogClose();
                         //Möglichkeit besteht, diese Fehlermeldung in den Fehler-Stack aufzunehmen
                     }.bind(this)
                 });
@@ -172,7 +168,7 @@ sap.ui.define([
                 //Tour wird aus einem vorher erstellten Model in der COmponent.json gerladen:
                 //Folgender Code muss für das Original entfernt werden
                 ///////////////////////////////////////////////////////
-
+                this.busyDialogClose();
                 var oTestData= new JSONModel();
                 oTestData.EvChangeable="X";
                 var sModelName=oModelStop.Description;
@@ -182,45 +178,43 @@ sap.ui.define([
             },
 
             handleRecievedStops:function(aRecievedStops, oData){ //Verarbeiten der erhaltenen Stopps
-                //var oStopModel=this.getView().getModel("Stops");
                 var oStopModel=this.getOwnerComponent().getModel("Stops");
                  
                 if(oData.EvChangeable===""){//"" --> ist in ABAP false --> es dürfen fertig verladene Stops nicht angezeigt werden
                     this._bStopSequenceChangeable=false;
                     aRecievedStops=this.filterFinishedStops(aRecievedStops);
+                    oStopModel.setProperty("/results", aRecievedStops);
                 } else{
                     this._bStopSequenceChangeable=true;
+                    oStopModel.setProperty("/results", aRecievedStops);
+                    this.stopDescriptionRefresh();
                 }
-
-                oStopModel.setProperty("/results", aRecievedStops);
-                this.stopDescriptionRefresh();
-                //this.busyDialogClose();
+                //Code Dopplung im if-else, weil Stoppnummer fest ist, wenn nicht mehr geändert werden darf
             },
 
-            onSendErrorsToBackend:function(){ //Senden der Console für Fehlermeldungen ans Backend (noch nicht abgeschlossen)
+            onSendErrorsToBackend:function(){ //Vorbereiten zum Senden des Fehler-Logs
                 var oErrorTextField=this.getView().byId("sendConsoleLogDialogInput");
                 this.sendLog(oErrorTextField);
-                //this.onSendErrorsToBackendDialogClose();
             },
 
-            sendLog:function(oErrorTextField){
+            sendLog:function(oErrorTextField){ //Senden des FehlerLogs
+                this.busyDialogOpen();
                 var oModel = this.getView().getModel("TP_VERLADUNG_SRV");
                 var oCreateData = {
                     "IdEumDev": this._IvIdEumDev,
                     "ErrorDesc": oErrorTextField.getValue(), 
-                    "ErrorLogList": this._aErrorLog
+                    "ErrorLogList": this.getOwnerComponent().getModel("ErrorLog").getProperty("/errors")
                 }
 
                 /*
-                oModel.create("/ErrorLogCollection", oCreateData, { // eventuell Url anpassen
-                    //Event für erfolgreiches Speichern der Daten
+                oModel.create("/ErrorLogCollection", oCreateData, { 
                     success: function (oData) {
-                        //schließen des Lade Dialogs
+                        //this.busyDialogClose();
                         oErrorTextField.setValue("");
                         this.onSendErrorsToBackendDialogClose();
                     }.bind(this),
                     error: function (oError) {
-                        //schließen des Lade Dialogs
+                        //this.busyDialogClose();
                         var errorMsg;
                         try {
                             errorMsg = JSON.parse(oError.responseText).error.message.value;
@@ -233,11 +227,15 @@ sap.ui.define([
                 */
 
                 //!Success-Fall
-                oErrorTextField.setValue("");
-                this.onSendErrorsToBackendDialogClose();
+                setTimeout(() => { 
+                    oErrorTextField.setValue("");
+                    this.busyDialogClose(); 
+                    this.onSendErrorsToBackendDialogClose();
+                },250); //Test zum Anzeigen des Lade-Dialogs mit 250ms
             },
 
             sendNewStopOrderToBackend:function(){ //Versenden der neuen Stoppreihenfolge an das Backend
+                this.busyDialogOpen();
                 var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
                 /*
                 var oCreateData = {
@@ -252,11 +250,11 @@ sap.ui.define([
                 oModel.create("/UpdateStopSequenceSet", oCreateData, { // eventuell Url anpassen
                     //Event für erfolgreiches Speichern der Daten
                     success: function (oData) {
-                        //Eventuell ist hier ein delay von Nöten
+                        //this.busyDialogClose();
                         this.setFocusNveHandlingPage();
                     },
                     error: function (oError) {
-                        //schließen des Lade Dialogs
+                        //this.busyDialogClose();
                         var errorMsg;
                         try {
                             errorMsg = JSON.parse(oError.responseText).error.message.value;
@@ -267,6 +265,8 @@ sap.ui.define([
                     }
                 });
                 */
+
+                setTimeout(() => { this.busyDialogClose(); },100); //Test zum Anzeigen des Lade-Dialogs mit 100ms
             },
 
             ///////////////////////////////////////
@@ -280,7 +280,6 @@ sap.ui.define([
             fireChangeStopOrderEvent:function(oEvent, oSelectedItem){ //jeder Button der die Stoppsreihenfolge beeinflussen kann löst diese Methode aus
                 var sEventTriggerId=oEvent.getSource().sId.substring(oEvent.getSource().sId.lastIndexOf("-")+1); //Id des Buttons der betätigt wurde
 
-                //var oModel=this.getView().getModel("Stops");
                 var oModel=this.getOwnerComponent().getModel("Stops");
                 var aStops=oModel.getProperty("/results"); //Array aus Objekten des Models
                 //!Zwischen den Beiden Arrays besteht ein unterschied: Listenelemente sind nicht die Objekte aus dem Model!
@@ -321,24 +320,22 @@ sap.ui.define([
                     default:
                         break;
                 }
-                this.onSelectSameItem(oStoppOfModel);
+                this.onSelectSameLocation(oStoppOfModel);
                 this.stopDescriptionRefresh();
             },
 
-            onSelectSameItem:function(oStopOfModel){ //Nachdem ein Stopp in der Reihenfolge verschoben wurde, soll dieser erneut ausgewählt werden
-                //var oModel=this.getView().getModel("Stops");
+            onSelectSameLocation:function(oStopOfModel){ //Nachdem ein Stopp in der Reihenfolge verschoben wurde, soll dieser erneut ausgewählt werden
                 var oModel=this.getOwnerComponent().getModel("Stops");
                 var oList=this.getView().byId("stopList");
                 var aListItems=oList.getItems();
                 var aListofStopps=oModel.getProperty("/results");
                 var iIndexSelectedItem=aListofStopps.indexOf(oStopOfModel);
-                //Variablen oben sind notwendig um aus dem Objekt aus dem Model eine referenz für die Stelle in der Liste zu schaffen
+                
                 oList.setSelectedItem(aListItems[iIndexSelectedItem], true);
-                this.onScrollToItem(iIndexSelectedItem, aListItems);
+                this.onScrollToItem(iIndexSelectedItem, aListItems); 
             },
             
             stopDescriptionRefresh:function(){ //Wird benötigt um die Stoppreihenfolge mit der ensprechenden Nummer bzw. dem Präfix "_"/"*" zu versehen
-                //var oModel=this.getView().getModel("Stops");
                 var oModel=this.getOwnerComponent().getModel("Stops");
                 var aStops=oModel.getProperty("/results");
                 var sPraefix="";
@@ -376,7 +373,6 @@ sap.ui.define([
             },
 
             onScanCustomer:function(oEvent){ //Scannen von Kunden wird abgerufen
-                //var aStops=this.getView().getModel("Stops").getProperty("/results");
                 var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
                 
                 if(this._bStopSequenceChangeable=== true){ //Prüfen ob Reihenfolge geändert werden darf
@@ -387,40 +383,30 @@ sap.ui.define([
             },
 
             processCustomerScan:function(oSelectedStop, iSelectedStopIndex, oScannedStop){ //Tatsächliches verschieben des Stopps im Model
-                //var oModel=this.getView().getModel("Stops");
                 var oModel=this.getOwnerComponent().getModel("Stops");
-                var oList=this.getView().byId("stopList");
-                //var aStops=this.getView().getModel("Stops").getProperty("/results");
                 var aStops=oModel.getProperty("/results");
-                var aListItems=oList.getItems();
                 var iScannedStopIndex=aStops.indexOf(oScannedStop);
-                var iIndexNewSelectedItem;
                 
                 if(iSelectedStopIndex<iScannedStopIndex){   //Der gescannte Stopp liegt unterhalb des ausgewählten Stopps
                     aStops.splice(iScannedStopIndex, 1);    //entfernen des gescannten Stopps
                     aStops.splice(iSelectedStopIndex+1, 0, oScannedStop);   //einfügen des gescannten Stopps unterhalb des Selektierten Stopps
-                    iIndexNewSelectedItem=iSelectedStopIndex+1;
                 }
 
                 if(iSelectedStopIndex>iScannedStopIndex){   //Der gescannte Stopp liegt oberhalb des ausgewählten Stopps
                     aStops.splice(iScannedStopIndex, 1);
                     aStops.splice(iSelectedStopIndex, 0, oScannedStop);
-                    iIndexNewSelectedItem=iSelectedStopIndex+1;
                 }
-
-                if(iSelectedStopIndex===iScannedStopIndex){ //Der gescannte Stopp ist der Ausgewählte Stopp
-                    iIndexNewSelectedItem=aStops.indexOf(oSelectedStop)+1;
-                }
+                //Bei Gleichheit muss nichts gemacht werden
 
                 //Anzeige für den User und fertig machen für den nächsten Scan
                 this.stopDescriptionRefresh();
-                this.onSelectSameItem(oScannedStop);
+                this.onSelectSameLocation(oScannedStop);
                 this.resetStopInputFields();
                 this.setFocusStopSortPage();
             },
 
             onScrollToItem:function(iIndexSelectedItem, aListItems){ //Innerhalb des Scroll-Containers soll die NVE wieder mittig angezeigt werden
-                if(iIndexSelectedItem<4){
+                if(iIndexSelectedItem<4){ //Vier ist die Vorgabe, denn das ist ungefähr die Mitte des Screens
                     this.getView().byId("ScrollContainerStopList").scrollToElement(aListItems[[0]]);
                 } else{
                     this.getView().byId("ScrollContainerStopList").scrollToElement(aListItems[[iIndexSelectedItem-2]]);
@@ -429,7 +415,7 @@ sap.ui.define([
                 
             },
 
-            filterFinishedStops: function(aRecievedStops) { //Entfernen von Stopps, deren Verlade-Prozess bereits abgeschlossen ist
+            filterFinishedStops: function(aRecievedStops) { //Gibt gefiltertes Array zurück
 
                 for (var i = aRecievedStops.length - 1; i >= 0; i--) {
                     if (aRecievedStops[i].LoadProcessFinished==="true") {
@@ -439,18 +425,19 @@ sap.ui.define([
                 return aRecievedStops;
             },
 
-            onSelectionChange:function(){
+            onSelectionChange:function(){ //Fokus in Eingabefeld bei Auswählen in der Liste
                 this.setFocusStopSortPage();
             },
 
-            cutStopDescription:function(){ //Weil die Stoppreihenfolge immer in der Description angepasst wurde
+            cutStopDescription:function(){ //Description wird auf max 60 Zeichen gekürzt
+                //Weil die Stoppreihenfolge immer in der Description angepasst wurde
                 //kann dort die aktuelle Reihenfolge ausgelesen werden
                 var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
 
-                for(var i in aStops){ //Abschneiden der Description weil diese im Backend maximal 60 Zeichen umfassen darf
+                for(var i in aStops){ 
                     var sPreviousDescription=aStops[i].Description;
                     if(sPreviousDescription.length>60){
-                        aStops[i].Description=sPreviousDescription.substring(60); //Es reicht, wenn man das Ende des String angibt
+                        aStops[i].Description=sPreviousDescription.substring(60); //Es reicht, wenn man das Ende des Strings angibt
                     }
                 }
 
@@ -465,11 +452,11 @@ sap.ui.define([
                 return this.getView().byId(customInputId).getValue() || this.getView().byId(normalInputId).getValue();
             },
 
-            getSelectedCustomer:function(){ //Prüfen ob ein Kunde in der Sopp-Übersicht ausgewählt wurde
+            onToCustomer:function(){ //Prüfen ob ein Kunde in der Sopp-Übersicht ausgewählt wurde
                 var oSelectedItem=this.getView().byId("stopList").getSelectedItem();
 
                 if(oSelectedItem){
-                    this.findSelectedCustomer(oSelectedItem);
+                    this.getSelectedCustomer(oSelectedItem);
                 } else{
                     this.noStopSelectedError(); //Fehler weil nichts ausgewählt wurde
                 }
@@ -693,7 +680,7 @@ sap.ui.define([
                 }
             },
 
-            findSelectedCustomer:function(oSelectedItem){ //Finden des Kunden
+            getSelectedCustomer:function(oSelectedItem){ //Finden des Kunden
                 var iIndexSelectedItem=this.getView().byId("stopList").getItems().indexOf(oSelectedItem);
                 var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
                 var oSelectedObject=aStops[iIndexSelectedItem];
@@ -711,7 +698,6 @@ sap.ui.define([
 
             onNavToNveHandling: function() { //schließen vom Busy Dialog notwendig weil erst entschieden werden muss, auf welche Seite Navigiert wird
                 this._oRouter.navTo("RouteNveHandling",{
-                    StopParameterModel:"StopParameterModel", 
                     sStopSequenceChangeable:this._bStopSequenceChangeable, 
                     bManuelInput:this._bManuelInput, 
                     IvIdEumDev:this._IvIdEumDev,
@@ -723,17 +709,7 @@ sap.ui.define([
                 this._oRouter.navTo("RouteInterdepotTour");
             },
 
-            /*
-            onNavToCustomer:function(){
-                //const oRouter = this.getOwnerComponent().getRouter();
-                this._oRouter.navTo("RouteToCustomer");
-            },
-
-            onNavBackToTourSelection:function(){
-                //const oRouter = this.getOwnerComponent().getRouter();
-                this._oRouter.navTo("RouteTourselection");
-            },
-            */
+            
             ///////////////////////////////////////
             //Dialoge
             ///////////////////////////////////////
@@ -749,14 +725,10 @@ sap.ui.define([
             },
 
             onCloseNavigationBackDialog:function(){
-                // note: We don't need to chain to the pDialog promise, since this event handler
-                // is only called from within the loaded dialog itself.
                 this.byId("NavigationBackDialog").close();
             },
 
             onSendErrorsToBackendDialogOpen:function(){
-                //this.playBeepError();
-                // create dialog lazily
                 this.oErrorDialog ??= this.loadFragment({
                     name: "suptpverladung2.0.view.fragments.SendErrorsToBackend"
                 });
@@ -765,8 +737,6 @@ sap.ui.define([
             },
 
             onSendErrorsToBackendDialogClose:function(){
-                // note: We don't need to chain to the pDialog promise, since this event handler
-                // is only called from within the loaded dialog itself.
                 this.byId("sendConsoleLogToBackendDialog").close();
             },
 
@@ -789,14 +759,13 @@ sap.ui.define([
             
                 this.oGeoMapDialog.then((oDialog) => oDialog.open());
                 this.setGeoMapProvider();
-                //this.oGeoMapDialog.then((oDialog) => this.setGeoMapProvider());
             },
 
             onCustomerInfoGeoMapDialogClose:function(){
                 this.byId("customerInfoGeoMapDialog").close();
             },
 
-            onBusyDialogOpen:function(){
+            busyDialogOpen:function(){
                 this.oBusyDialog ??= this.loadFragment({
                     name: "suptpverladung2.0.view.fragments.BusyDialog"
                 });
@@ -865,7 +834,7 @@ sap.ui.define([
             },
 
             ChangeStopError:function(){  //Die Stoppreihenfolge darf nicht verändert werden
-                //this.playBeepError();
+                this.playBeepError();
                 MessageBox.error(this._i18nModel.getText("stopsNotChangeable"), {
                     onClose:function(){
                         this.setFocusStopSortPage();
