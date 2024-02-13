@@ -32,7 +32,7 @@ sap.ui.define([
 
                 this._oRouter = this.getOwnerComponent().getRouter();
 			    this._oRouter.getRoute("RouteNveHandling").attachPatternMatched(this.onObjectMatched, this);
-                this.initiateScanner();
+                //this.initiateScanner();
                 this._navigationHandler.registerNavigationHandler(this);
             },
 
@@ -61,7 +61,7 @@ sap.ui.define([
                 });
             },
 
-            /*
+            /* Von Robin Code für den Scan ohne Inputfelder
             myCordova.enableDataWedge = function() {
              
                 document.addEventListener('keydown', function(evt) {
@@ -93,19 +93,19 @@ sap.ui.define([
             }
             */
 
-            callNavigationHandler:function(oStop){
+            callNavigationHandler:function(oStop){ //TODO:Bis hierher funktioniert die Logik! Morgen prüfen
                 var oNveModel=this.getOwnerComponent().getModel("NVEs");
                 var oInterdepotModel=this.getOwnerComponent().getModel("InterdepotNVEs");
                 this._navigationHandler.getNvesOfStop(oStop, oNveModel, oInterdepotModel); // this._oRouter --> war auch ein Parameter
             },
 
             //TODO: Hier weiterarbeiten nach dem Muster der StopsOfTour-Page
-            onObjectMatched:function(oEvent){
+            onObjectMatched:function(oEvent){ //Wird komischer Weise 2x ausgeführt
                 var oParameters=oEvent.getParameter("arguments");
                 this.setGlobalParameters(oParameters);
             },
 
-            setGlobalParameters:function(oParameters){
+            setGlobalParameters:function(oParameters){  
                 this._sStopParameterModel=this.getOwnerComponent().getModel("StopParameterModel");
                 this._IvIdEumDev=oParameters.IvIdEumDev;
                 this._IvIdTr=oParameters.IvIdTr;
@@ -156,7 +156,7 @@ sap.ui.define([
             },
 
             sendLog:function(oErrorTextField){ //TODO: Prüfen ob Array/Objekte oder Text gesendet werden soll
-                //this.onBusyDialogOpen();
+                //this.busyDialogOpen();
                 var oModel = this.getView().getModel("TP_VERLADUNG_SRV");
                 var oCreateData = {
                     "IdEumDev": this._IvIdEumDev,
@@ -242,7 +242,8 @@ sap.ui.define([
             },
 
             FuLoadingSet:function(oNve){ //NVE zum Verladen ans Backend schicken
-                this.onSortStops(this.getOwnerComponent().getModel("Stops").getProperty("/results"));
+                //this.onSortStops(this.getOwnerComponent().getModel("Stops").getProperty("/results")); //Entfernen abgearbeiteter Stops --> Prüfen ob nicht schon erledigt
+                this.busyDialogOpen();
                 //TODO_5
                 /*
                 var oModel = this.getView().getModel("TP_VERLADUNG_SRV");
@@ -259,6 +260,7 @@ sap.ui.define([
                 oModel.create("/FuLoadingSet", oCreateData, { 
                     //Event für erfolgreiches Speichern der Daten
                     success: function (oData) { //Speichern der verladenen NVE
+                        this.busyDialogClose();
 
                         this._bStopSequenceChangeable=false;
 
@@ -274,6 +276,7 @@ sap.ui.define([
                         this.MessageSuccesfullyLoaded();
                     }.bind(this),
                     error:function(oError){
+                        this.busyDialogClose();
                         var sErrorMsg;
 
                         try {
@@ -291,11 +294,14 @@ sap.ui.define([
 
 
                 //!Für Demozwecke werden Methoden hier für den Success-Fall aufgerufen, der Error-Fall wurde vernachlässigt
-                this.saveLoadedNve(oNve);
-                this.spliceNveOutOfNveModel(oNve);
-                this.CheckIfModelIsEmpty();
-                this.MessageSuccesfullyLoaded();
+                setTimeout(() => { 
+                    this.busyDialogClose(); 
 
+                    this.saveLoadedNve(oNve);
+                    this.spliceNveOutOfNveModel(oNve);
+                    this.CheckIfModelIsEmpty();
+                    //this.MessageSuccesfullyLoaded();
+                },250);
             },
 
             sendNewStopOrderToBackend:function(){ //Versenden der neuen Stoppreihenfolge an das Backend
@@ -387,14 +393,13 @@ sap.ui.define([
             },
 
             saveLoadedNve:function(oNve){ //Speichern einer Verladenen NVE in "_aLoadedNvesOfTour", wenn sie darin noch nicht existiert
-                this.checkIfLastTourWasTheSame(); 
-                //var _aLoadedNvesOfTour=this.getView().getModel("LoadedNves").getProperty("/results");
+                //this.checkIfLastTourWasTheSame(); 
+
                 var _aLoadedNvesOfTour=this.getOwnerComponent().getModel("LoadedNves").getProperty("/results");
                 if(_aLoadedNvesOfTour.indexOf(oNve)===-1){
                     _aLoadedNvesOfTour.push(oNve);
                     this.spliceClearedArray(oNve);
                     this.saveInAllNveArray(oNve);
-                    //this.onAlreadyClearedDialogClose();
                 } else{
                     this.onSwapFromClearedToLoaded();
                 }
@@ -427,7 +432,6 @@ sap.ui.define([
             },
 
             spliceNveOutOfNveModel:function(oNve){ //Entfernen einer NVE aus dem NVE-Tree eines Stopps
-                //var oModel=this.getView().getModel("NVEs");
                 var oModel=this.getOwnerComponent().getModel("NVEs");
                 var aNves=oModel.getProperty("/results");
                 var iIndexOfNve=aNves.indexOf(oNve);
@@ -437,9 +441,8 @@ sap.ui.define([
                 }
                 oModel.refresh();
                 //UI Methoden 
-                this.resetNveInputFields(); 
-                this.setTitleForNveTree();
-                this.checkIfNextStopIsNecessary();
+                this.resetNveInputFields(); //Eingebafeld leeren und Fokus setzen
+                this.setTitleForNveTree(); //Hier evtl. nicht von Nöten, macht es nur hübscher
             },
 
             spliceStop:function(sTitleOfPage){ //Entfernen des abgearbeiteten Stopps aus dem Model/ der Liste
@@ -789,8 +792,8 @@ sap.ui.define([
 
             CheckIfModelIsEmpty:function(){ //Wenn eine NVE verladen wurde soll geprüft werden, ob noch eine NVE zu diesem Stopp existiert
                 var aTreeNves=this.getOwnerComponent().getModel("NVEs").getProperty("/results");
-                if(aTreeNves.length===0){
-                    this.spliceStop("NveHandlingPageTitle"); //Wenn nicht, dann splice diesen Stopp aus der Liste
+                if(aTreeNves.length===0){ //Wenn keine weitere NVE --> Löschen des Stops aus der Übersicht
+                    this.spliceStop("NveHandlingPageTitle");
                 }
             },
 
@@ -808,7 +811,7 @@ sap.ui.define([
                 if(aStops.length>0){
                     this.getNextStopInLine(aStops);
                 } else{
-                    this.setInterNvesinClearModel(); //Klärgrund-NVEs für die Abschlussübersicht vorbereiten
+                    //this.setInterNvesinClearModel(); //Klärgrund-NVEs für die Abschlussübersicht vorbereiten
                 }
             },
 
@@ -892,7 +895,7 @@ sap.ui.define([
                 this.pDialog.then((oDialog) => oDialog.open());
             },
 
-            onBusyDialogOpen:function(){
+            busyDialogOpen:function(){
                 this.oBusyDialog ??= this.loadFragment({
                     name: "suptpverladung2.0.view.fragments.BusyDialog"
                 });
