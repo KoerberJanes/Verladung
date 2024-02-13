@@ -194,7 +194,7 @@
         },
         {
           "name": "RouteStopsOfTour",
-          "pattern": "RouteStopsOfTour/{SelectedTourModel},{sStopSequenceChangeable},{bManuelInput},{IvIdEumDev},{IvIdTr}",
+          "pattern": "RouteStopsOfTour/{sStopSequenceChangeable},{bManuelInput},{IvIdEumDev},{IvIdTr}",
           "target": [
             "TargetStopsOfTour"
           ]

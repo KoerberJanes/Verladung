@@ -85,8 +85,7 @@ sap.ui.define([
             },
 
             setGlobalParameters:function(oParameters){
-                var sSelectedTourModel=oParameters.SelectedTourModel;
-                this._oTour=this.getView().getModel(sSelectedTourModel).getProperty("/tour");
+                this._oTour=this.getView().getModel("TourParameterModel").getProperty("/tour");
                 this._bStopSequenceChangeable=oParameters.sStopSequenceChangeable;
 
                 this._bManuelInput=(/true/).test(oParameters.bManuelInput); //Kommt als String an, obwohl hier ein Boolean erwartet wird
@@ -536,7 +535,7 @@ sap.ui.define([
             callNavigationHandler:function(oStop){
                 var oNveModel=this.getOwnerComponent().getModel("NVEs");
                 var oInterdepotModel=this.getOwnerComponent().getModel("InterdepotNVEs");
-                this._navigationHandler.getNvesOfStop(oStop, oNveModel, oInterdepotModel, this._oRouter);
+                this._navigationHandler.getNvesOfStop(oStop, oNveModel, oInterdepotModel); //, this._oRouter (war vorher auch als Parameter dabei, eigentlich unnötig)
             },
 
             ///////////////////////////////////////

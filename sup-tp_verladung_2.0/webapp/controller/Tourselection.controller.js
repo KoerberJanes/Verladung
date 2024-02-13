@@ -40,12 +40,11 @@ sap.ui.define([
                     //Fokus Methode für die jeweiligen Felder --> Hier nicht notwendig, da keine Inputfelder existieren
                 }.bind(this));
 
-                //!Methode um die Demo-Models zu Setzen!
+                //!Methode um die Demo-Models zu Setzen! (Später entfernen)
                 this.setDemo();
 
                 this.getUrlParameters();
                 this.getToursForDriver(); //Erhalten der Touren für den Fahrer (über URL Parameter erkennbar)
-                //sap.ui.controller("suptpverladung2.0.util.NveNavigation").onNveNavigationTest("CallParameter");
             },
 
             setDemo:function(){ //Demo Infos in die benötigten Models laden --> Später entfernen!
@@ -116,7 +115,7 @@ sap.ui.define([
 
             },
 
-            getUrlParameters:function(){  //Hat wohl mit dem Fahrer und dessen ID zutun, genau kann ichs nicht sagen, wird aber benötigt
+            getUrlParameters:function(){  //gibt die ID des Faherers als String wieder, die gespeichert werden muss um Touren bearbeiten zu können
                 var sIdEumDev;
                 try {// aus der URL
                     var startupParams = this.getOwnerComponent().getComponentData().startupParameters;
@@ -134,9 +133,9 @@ sap.ui.define([
             //Backend
             /////////////////////////////
 
-            getToursForDriver:function(){ 
-                //Wird direkt zum Start der Anwendung ausgeführt! Es werden alle Touren aus dem Backend geholt, die einem Fahrer zugewiesen wurden
+            getToursForDriver:function(){ // Touren des angemeldeten Fahrers werden aus dem Backend geholt
                 //this.onBusyDialogOpen();
+
                 var today = new Date();
                 var mm = today.getMonth() + 1; //January is 0!
                 var sToday = today.getDate() + "." + mm + "." + today.getFullYear();
@@ -152,28 +151,28 @@ sap.ui.define([
                     filters: aFilters,
 
                     success: function (oData) {
-                        this.setDriverDescription(oData); //Setzen der Personenbezogenen Daten in Model für die View
+                        //this.busyDialogClose();
+                        this.setDriverDescription(oData); //Setzen von Personenbezogenen Daten 
                         var aRecievedTours=oData.getProperty("/results");
 
                         if(aRecievedTours.length===0){
                             this.noToursError(); //Fahrer hat keine Touren
                         } else{
-                            this.handleRecievedTours(aRecievedTours); //Setzen von Model mit Touren
+                            this.handleRecievedTours(aRecievedTours); //Setzen der Touren in Model
                         }
 
                     }.bind(this),
                     error: function(oError){
-                        //NOP
+                        //this.busyDialogClose();
+                        //Bisher keine Funktion
                     }.bind(this)
                 });
                 */
-               //this.busyDialogClose();
                 //!Testfall
                 var oData=new JSONModel();
                 oData.setProperty("/results", [{DrvDesc: "DriverTest", LsDesc:"Licence Plate"}]);
                 this.setDriverDescription(oData);
                 //!Laden der Demo-Touren aus Component.js
-                //var aToursFromDemo=this.getView().getModel("Tour").getProperty("/results");
                 var aToursFromDemo=this.getOwnerComponent().getModel("Tour").getProperty("/results");
                 this.handleRecievedTours(aToursFromDemo);
             },
@@ -200,13 +199,13 @@ sap.ui.define([
                 oModel.create("/ErrorLogCollection", oCreateData, { // eventuell Url anpassen
                     //Event für erfolgreiches Speichern der Daten
                     success: function (oData) {
-                        //schließen des Lade Dialogs
+                        //this.busyDialogClose();
                         oErrorTextField.setValue("");
                         this.showSendingSuccessfullMessage();
                         this.onSendErrorsToBackendDialogClose();
                     }.bind(this),
                     error: function (oError) {
-                        //schließen des Lade Dialogs
+                        //this.busyDialogClose();
                         var errorMsg;
                         try {
                             errorMsg = JSON.parse(oError.responseText).error.message.value;
@@ -217,7 +216,6 @@ sap.ui.define([
                     }.bind(this)
                 });
                 */
-               //this.busyDialogClose();
 
                 //!Success-Fall
                 oErrorTextField.setValue("");
@@ -248,9 +246,16 @@ sap.ui.define([
                 if(oListItem===undefined){ 
                     this.noTourSelectedError(); //Keine Tour wurde Ausgewählt, also Fehler ausgeben
                 } else{
-                    this.findModelStop(oList, oListItem); //Ermitteln der Tour aus dem Model
+                    this.getModelStop(oList, oListItem); //Ermitteln der Tour aus dem Model
                 }
+            },
 
+            getModelStop:function(oList, oListItem){ //Ermitteln, des ausgewählten Stopps aus dem Model
+                var oTourModel=this.getOwnerComponent().getModel("Tour");
+                var iIndexSelectedItemInList=oList.getItems().indexOf(oListItem);
+                var oModelStop=oTourModel.getProperty("/results")[iIndexSelectedItemInList];
+                //Kann kein Fehler enstehen, denn mindestens eine Tour wird von App selbst ausgewählt
+                this.setModelStop(oModelStop); //Setzen der Tour in das Model, das auf der nächste Seite referenziert wird 
             },
 
             ///////////////////////////////////////
@@ -261,10 +266,10 @@ sap.ui.define([
                 var oList=this.getView().byId("LTourAuswahl");
                 var oaTourListItems=oList.getItems();
             
-                if(oaTourListItems[0]!==undefined){
+                if(oaTourListItems[0]!==undefined){ //Wenn midnestens ein Eintrag existiert
                     oList.setSelectedItem(oaTourListItems[oaTourListItems.length-1]);
                 } else{
-                    //NOP vorerst
+                    //Es existiert kein Eintrag --> NOP, da Meldung ohnehin angezeigt wird
                 }
             },
 
@@ -286,7 +291,7 @@ sap.ui.define([
             },
 
             ///////////////////////////////////////
-            //check-/finder-Methoden
+            //check-Methoden
             ///////////////////////////////////////
 
             onCheckIfTourSelected:function(){ //Prüfung ob eine Tour ausgewählt wurde
@@ -299,14 +304,6 @@ sap.ui.define([
                 }
             },
 
-            findModelStop:function(oList, oListItem){ //Ermitteln, des ausgewählten Stopps aus dem Model
-                var oTourModel=this.getOwnerComponent().getModel("Tour");
-                var iIndexSelectedItemInList=oList.getItems().indexOf(oListItem);
-                var oModelStop=oTourModel.getProperty("/results")[iIndexSelectedItemInList];
-
-                this.setModelStop(oModelStop); //Setzen der Tour in das Model, das auf der nächste Seite referenziert wird 
-            },
-
             //////////////////////////////////////
             //Navigation
             //////////////////////////////////////
@@ -317,13 +314,11 @@ sap.ui.define([
                 var _IvIdTr=this.getOwnerComponent().getModel("TourParameterModel").getProperty("/tour").IdTr;
                 //Navigation zur Stop-Übersicht
                 //Parameter sind:
-                //1. Model-Name in dem sich die Stops befinden
-                //2. ob die Stoppreihenfolge änderbar isr
-                //3. Welcher Inputmode gerade aktiv ist
-                //4. Die Identifikation der Person
-                //5. Die Identifikation der Tour 
+                //1. ob die Stoppreihenfolge änderbar ist
+                //2. Welcher Inputmode gerade aktiv ist
+                //3. Die Identifikation der Person
+                //4. Die Identifikation der Tour 
                 oRouter.navTo("RouteStopsOfTour",{
-                    SelectedTourModel:"TourParameterModel",
                     sStopSequenceChangeable:sStopSequenceChangeable, 
                     bManuelInput:this._bManuelInput,
                     IvIdEumDev:this._IvIdEumDev,
@@ -361,7 +356,7 @@ sap.ui.define([
                 setTimeout(() => { this.byId("BusyDialog").close() },250);
             },
 
-            onBusyDialogClose:function(){ //Schließen des Dialoges zur Visualisierung des lade-Prozesses
+            onBusyDialogClose:function(){ //Manuelles Schließen des lade Dialoges aus dem UI (Für Fehler notwendig in der Entwicklung)
                 this.byId("BusyDialog").close();
                 
                 this.setFocusonLatestTour();
@@ -387,7 +382,7 @@ sap.ui.define([
                 });
             },
 
-            noToursError:function(){ //Es existieren keine Touren für den Fahrer
+            noToursError:function(){ //Es konnten keine Touren geladen werden
                 MessageBox.error(this._i18nModel.getText("noToursLoaded"), {
                     onClose:function(){
                         //NOP:
@@ -395,7 +390,7 @@ sap.ui.define([
                 });
             },
 
-            noStopsToThisTourError:function(){ //Tour hat keine Stopps (kommt hoffentlich nicht vor)
+            noStopsToThisTourError:function(){ //Tour enthält keine Daten
                 MessageBox.error(this._i18nModel.getText("noStopsInTour"), {
                     onClose:function(){
                         this.resetStopInputFields();
@@ -403,7 +398,7 @@ sap.ui.define([
                 });
             },
 
-            sendingFailedError:function(errorMsg){
+            sendingFailedError:function(errorMsg){ //Fehler Log senden schlägt fehl
                 MessageBox.error(errorMsg, {
                     onClose:function(){
                         //NOP
@@ -411,7 +406,7 @@ sap.ui.define([
                 });
             },
 
-            showSendingSuccessfullMessage:function(){
+            showSendingSuccessfullMessage:function(){ //Fehler Log erfolgreich gesendet
                 MessageToast.show(this._i18nModel.getText("successfullySend"), {
                     duration: 1000,
                     width:"15em",
