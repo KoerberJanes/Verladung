@@ -37,6 +37,37 @@ sap.ui.define([
                 })
             },
             */
+
+            /* Von Robin Code für den Scan ohne Inputfelder
+            myCordova.enableDataWedge = function() {
+             
+                document.addEventListener('keydown', function(evt) {
+                    app.log("keydown: " + evt.key, "I");
+                    if (myCordova.interval) {
+                        clearInterval(myCordova.interval);
+                    }
+                    if (evt.code == 'Enter' || evt.key == 'Enter') {
+                        if (myCordova.barcode && myCordova.barcode.length > 3) {
+                            myCordova.barcode = myCordova.barcode.replace(myCordova.barcodePrefix, "");
+                            myCordova.barcode = myCordova.barcode.replace(myCordova.barcodeSuffix, "");
+                            app.log("Barcode: " + myCordova.barcode, "I");
+                            evt.preventDefault();
+                            myCordova.callScanCallback(myCordova.barcode);
+                        }
+             
+                        myCordova.barcode = '';
+                        return;
+                    }
+                    if (evt.key != 'Shift') {
+                        if (evt.key.length == '1') {
+                            myCordova.barcode += evt.key;
+                        }
+                        myCordova.interval = setInterval(() => myCordova.barcode = '', 50);
+                    }
+                });
+            }
+            */
+           
             onInit: function () {
 
                 this._oTour=null;

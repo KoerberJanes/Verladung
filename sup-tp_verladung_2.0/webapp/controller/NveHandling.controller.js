@@ -83,15 +83,23 @@ sap.ui.define([
 
             setNvesOfStop_InterdepotCase:function(aResponseNves){ //Hier werden alle Methoden für den Fall eines Interdepot Stopps abgehandelt
                 var oInterdepotModel=this.getOwnerComponent().getModel("InterdepotNVEs");
-                //TODO: Aufbau der NVEs muss noch gemacht werden (also das TreeModel)
-                oInterdepotModel.setProperty("/results", aResponseNves);
+                //!Derzeit noch nicht getestet weil der sortNveHandler noch in Arbeit ist
+                /*
+                this._sortNveHandler.setAttributesForLoading(aResponseNves, this._i18nModel);
+                var aSortedResponseNves=this.getOwnerComponent().getModel("sortedNveModel").getProperty("/sortedNves");
+                */
+                oInterdepotModel.setProperty("/results", aResponseNves); //aSortedResponseNves wird hier später als Parameter erwartet
                 oInterdepotModel.refresh();
                 this.busyDialogClose();
             },
     
             setNvesOfStop_CustomerCase:function(aResponseNves){ //Hier werden alle Methoden für den Fall eines Kunden Stopps abgehandelt
                 var oNveModel=this.getOwnerComponent().getModel("NVEs");
-                //TODO: Aufbau der NVEs muss noch gemacht werden (also das TreeModel)
+                //!Derzeit noch nicht getestet weil der sortNveHandler noch in Arbeit ist
+                /*
+                this._sortNveHandler.setAttributesForLoading(aResponseNves, this._i18nModel);
+                var aSortedResponseNves=this.getOwnerComponent().getModel("sortedNveModel").getProperty("/sortedNves");
+                */
                 oNveModel.setProperty("/results", aResponseNves);
                 oNveModel.refresh();
                 this.busyDialogClose();
