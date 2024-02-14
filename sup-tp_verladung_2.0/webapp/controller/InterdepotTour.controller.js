@@ -13,12 +13,13 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/ui/core/Item",
     "suptpverladung2/0/util/scanner",
-    "suptpverladung2/0/util/navigationHandler"
+    "suptpverladung2/0/util/navigationHandler",
+    "suptpverladung2/0/util/sortNveHandler"
 ],
     /**
      * @param {typeof sap.ui.core.mvc.Controller} Controller
      */
-    function (Controller, JSONModel, HashChanger, Filter, Sorter, MessageToast, MessageBox, GeoMap, Spot, Spots, VoAbstract, FilterOperator, Item, scanner, navigationHandler) {
+    function (Controller, JSONModel, HashChanger, Filter, Sorter, MessageToast, MessageBox, GeoMap, Spot, Spots, VoAbstract, FilterOperator, Item, scanner, navigationHandler, sortNveHandler) {
         "use strict";
 
         return Controller.extend("suptpverladung2.0.controller.InterdepotTour", {
@@ -29,6 +30,7 @@ sap.ui.define([
                 this._bStopSequenceChangeable=true;
                 this._bManuelInput=false;
                 this._navigationHandler=navigationHandler;
+                this._sortNveHandler=sortNveHandler;
 
                 this._oRouter = this.getOwnerComponent().getRouter();
 			    this._oRouter.getRoute("RouteInterdepotTour").attachPatternMatched(this.onObjectMatched, this);

@@ -13,12 +13,13 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/ui/core/Item",
     "suptpverladung2/0/util/scanner",
-    "suptpverladung2/0/util/navigationHandler"
+    "suptpverladung2/0/util/navigationHandler",
+    "suptpverladung2/0/util/sortNveHandler"
 ],
     /**
      * @param {typeof sap.ui.core.mvc.Controller} Controller
      */
-    function (Controller, JSONModel, HashChanger, Filter, Sorter, MessageToast, MessageBox, GeoMap, Spot, Spots, VoAbstract, FilterOperator, Item, scanner, navigationHandler) {
+    function (Controller, JSONModel, HashChanger, Filter, Sorter, MessageToast, MessageBox, GeoMap, Spot, Spots, VoAbstract, FilterOperator, Item, scanner, navigationHandler, sortNveHandler) {
         "use strict";
 
         return Controller.extend("suptpverladung2.0.controller.StopsOfTour", {
@@ -44,11 +45,11 @@ sap.ui.define([
                 this._IvIdEumDev="";
                 this._IvIdTr="";
                 this._navigationHandler=navigationHandler;
+                this._sortNveHandler=sortNveHandler;
 
                 this._oRouter = this.getOwnerComponent().getRouter();
 			    this._oRouter.getRoute("RouteStopsOfTour").attachPatternMatched(this.onObjectMatched, this);
                 this.initiateScanner();
-                //this._navigationHandler.registerNavigationHandler(this);
             },
 
             onAfterRendering:function(){
@@ -521,8 +522,8 @@ sap.ui.define([
             callNavigationHandler:function(oStop){
                 this.busyDialogOpen();
                 var oResponseModel=this.getOwnerComponent().getModel("Response");
-               this._navigationHandler.getNvesOfStop(oStop, this._IvIdEumDev, this._IvIdTr, oResponseModel);
-               this.getKindOfStop();
+                this._navigationHandler.getNvesOfStop(oStop, this._IvIdEumDev, this._IvIdTr, oResponseModel);
+                this.getKindOfStop();
             },
 
             getKindOfStop:function(){
@@ -539,22 +540,26 @@ sap.ui.define([
 
             setNvesOfStop_InterdepotCase:function(aResponseNves){ //Hier werden alle Methoden für den Fall eines Interdepot Stopps abgehandelt
                 var oInterdepotModel=this.getOwnerComponent().getModel("InterdepotNVEs");
-                //TODO: Aufbau der NVEs muss noch gemacht werden (also das TreeModel)
-                oInterdepotModel.setProperty("/results", aResponseNves);
+                //!Derzeit noch nicht getestet weil der sortNveHandler noch in Arbeit ist
+                /*
+                this._sortNveHandler.setAttributesForLoading(aResponseNves, this._i18nModel);
+                var aSortedResponseNves=this.getOwnerComponent().getModel("sortedNveModel").getProperty("/sortedNves");
+                */
+                oInterdepotModel.setProperty("/results", aResponseNves); //aSortedResponseNves wird hier später als Parameter erwartet
                 oInterdepotModel.refresh();
-                //this.navToInterdepotPage();
-                //TODO: weitere UI Methoden
                 this.busyDialogClose();
                 this.onNavToInterdepotNveHandling();
             },
     
             setNvesOfStop_CustomerCase:function(aResponseNves){ //Hier werden alle Methoden für den Fall eines Kunden Stopps abgehandelt
                 var oNveModel=this.getOwnerComponent().getModel("NVEs");
-                //TODO: Aufbau der NVEs muss noch gemacht werden (also das TreeModel)
-                oNveModel.setProperty("/results", aResponseNves);
+                //!Derzeit noch nicht getestet weil der sortNveHandler noch in Arbeit ist
+                /*
+                this._sortNveHandler.setAttributesForLoading(aResponseNves, this._i18nModel);
+                var aSortedResponseNves=this.getOwnerComponent().getModel("sortedNveModel").getProperty("/sortedNves");
+                */
+                oNveModel.setProperty("/results", aResponseNves); //aSortedResponseNves wird hier später als Parameter erwartet
                 oNveModel.refresh();
-                //this.navToNveHandling();
-                //TODO: weitere UI Methoden
                 this.busyDialogClose();
                 this.onNavToNveHandling();
             },
@@ -634,7 +639,7 @@ sap.ui.define([
                 */
             },
 
-            setNextNveStop:function(){
+            setNextNveStop:function(){ //TODO: herausfinden was es damit auf sich hat
                 var oStopsModel=this.getOwnerComponent().getModel("Stops");
                 var aStops=oStopsModel.getProperty("/results");
             },
@@ -655,7 +660,7 @@ sap.ui.define([
                 this.sendNewStopOrderToBackend();
             },
 
-            setStopParameterModel:function(oStop){ //Setzen des Models, welches für die nächste Seite & Navigation
+            setStopParameterModel:function(oStop){ //Setzen des Models für die nächste Seite & Navigation
                 this.getOwnerComponent().getModel("StopParameterModel").setProperty("/Stop", oStop);
             },
 
@@ -719,6 +724,8 @@ sap.ui.define([
                 var oSelectedObject=aStops[iIndexSelectedItem];
 
                 this.setStopParameterModel(oSelectedObject);
+                this.callNavigationHandler(oSelectedObject);
+
             },
 
             ///////////////////////////////////////

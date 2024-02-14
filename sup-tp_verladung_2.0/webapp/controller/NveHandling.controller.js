@@ -13,12 +13,13 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/ui/core/Item",
     "suptpverladung2/0/util/scanner",
-    "suptpverladung2/0/util/navigationHandler"
+    "suptpverladung2/0/util/navigationHandler",
+    "suptpverladung2/0/util/sortNveHandler"
 ],
     /**
      * @param {typeof sap.ui.core.mvc.Controller} Controller
      */
-    function (Controller, JSONModel, HashChanger, Filter, Sorter, MessageToast, MessageBox, GeoMap, Spot, Spots, VoAbstract, FilterOperator, Item, scanner, navigationHandler) {
+    function (Controller, JSONModel, HashChanger, Filter, Sorter, MessageToast, MessageBox, GeoMap, Spot, Spots, VoAbstract, FilterOperator, Item, scanner, navigationHandler, sortNveHandler) {
         "use strict";
 
         return Controller.extend("suptpverladung2.0.controller.NveHandling", {
@@ -29,6 +30,7 @@ sap.ui.define([
                 this._bStopSequenceChangeable=true;
                 this._bManuelInput=false;
                 this._navigationHandler=navigationHandler;
+                this._sortNveHandler=sortNveHandler;
 
                 this._oRouter = this.getOwnerComponent().getRouter();
 			    this._oRouter.getRoute("RouteNveHandling").attachPatternMatched(this.onObjectMatched, this);
@@ -46,7 +48,6 @@ sap.ui.define([
                 scanner.registerScanner((scannedValue) => {
                     if(scannedValue.match(/[0-9]/) && scannedValue.match(/[a-zA-Z]/)){
                         //only letters
-                        //this.setValueInput(scannedValue);
                         sap.m.MessageToast.show("Gescannted Inhalt: "+scannedValue);
                     } else{
                         if(scannedValue.match(/^[0-9]+$/)){
@@ -59,60 +60,25 @@ sap.ui.define([
                 });
             },
 
-            /* Von Robin Code für den Scan ohne Inputfelder
-            myCordova.enableDataWedge = function() {
-             
-                document.addEventListener('keydown', function(evt) {
-                    app.log("keydown: " + evt.key, "I");
-                    if (myCordova.interval) {
-                        clearInterval(myCordova.interval);
-                    }
-                    if (evt.code == 'Enter' || evt.key == 'Enter') {
-                        if (myCordova.barcode && myCordova.barcode.length > 3) {
-                            myCordova.barcode = myCordova.barcode.replace(myCordova.barcodePrefix, "");
-                            myCordova.barcode = myCordova.barcode.replace(myCordova.barcodeSuffix, "");
-                            app.log("Barcode: " + myCordova.barcode, "I");
-                            evt.preventDefault();
-                            myCordova.callScanCallback(myCordova.barcode);
-                        }
-             
-                        myCordova.barcode = '';
-                        return;
-                    }
-                    if (evt.key != 'Shift') {
-                        if (evt.key.length == '1') {
-                            myCordova.barcode += evt.key;
-                        }
-                        myCordova.interval = setInterval(() => myCordova.barcode = '', 50);
-                    }
-                });
-             
-             
-            }
-            */
-
-            callNavigationHandler:function(oStop){ //TODO:Bis hierher funktioniert die Logik! Morgen prüfen
-                /*
-                var oNveModel=this.getOwnerComponent().getModel("NVEs");
-                var oInterdepotModel=this.getOwnerComponent().getModel("InterdepotNVEs");
-                this._navigationHandler.getNvesOfStop(oStop, oNveModel, oInterdepotModel); // this._oRouter --> war auch ein Parameter
-                */
+            callNavigationHandler:function(oStop){ //
+                this.busyDialogOpen();
                 var oResponseModel=this.getOwnerComponent().getModel("Response");
-               this.busyDialogOpen();
-               this._navigationHandler.getNvesOfStop(oStop, this._IvIdEumDev, this._IvIdTr, oResponseModel);
+                this.setStopParameterModel(oStop);
+               this._navigationHandler.getNvesOfStop(oStop, this._IvIdEumDev, this._IvIdTr, oResponseModel); //Util methode um oData und infos über Stopart zu erhalten
                this.getKindOfStop();
             },
 
-            getKindOfStop:function(){
+            getKindOfStop:function(){ //Erfahren um welche Stopart es sich handelt und anpassen der Daten
                 var oResponseModel=this.getOwnerComponent().getModel("Response");
                 var aResponseNves=oResponseModel.getProperty("/results");
                 
-                if(oResponseModel.isInterdepot==true){
+                if(oResponseModel.isInterdepot==true){ //Interdepot
                     this.setNvesOfStop_InterdepotCase(aResponseNves);
-                } else{
+                } else{ //Customer
                     this.setNvesOfStop_CustomerCase(aResponseNves);
                 }
-
+                
+                this.setUserInterfaceMethodes(); //Aktualisieren des UIs
             },
 
             setNvesOfStop_InterdepotCase:function(aResponseNves){ //Hier werden alle Methoden für den Fall eines Interdepot Stopps abgehandelt
@@ -120,8 +86,6 @@ sap.ui.define([
                 //TODO: Aufbau der NVEs muss noch gemacht werden (also das TreeModel)
                 oInterdepotModel.setProperty("/results", aResponseNves);
                 oInterdepotModel.refresh();
-                //this.navToInterdepotPage();
-                //TODO: weitere UI Methoden
                 this.busyDialogClose();
             },
     
@@ -130,13 +94,11 @@ sap.ui.define([
                 //TODO: Aufbau der NVEs muss noch gemacht werden (also das TreeModel)
                 oNveModel.setProperty("/results", aResponseNves);
                 oNveModel.refresh();
-                //this.navToNveHandling();
-                //TODO: weitere UI Methoden
                 this.busyDialogClose();
             },
 
-            //TODO: Hier weiterarbeiten nach dem Muster der StopsOfTour-Page
-            onObjectMatched:function(oEvent){ //Wird komischer Weise 2x ausgeführt
+            onObjectMatched:function(oEvent){ //Seite wird Identifiziert und globale Parameter gesetzt
+                //Wird komischer Weise 2x ausgeführt
                 var oParameters=oEvent.getParameter("arguments");
                 this.setGlobalParameters(oParameters);
             },
@@ -148,13 +110,16 @@ sap.ui.define([
                 
                 this._bManuelInput=(/true/).test(oParameters.bManuelInput); //Kommt als String an, obwohl hier ein Boolean erwartet wird
                 this._bStopSequenceChangeable=(/true/).test(oParameters.sStopSequenceChangeable);
+                this.setUserInterfaceMethodes();
+            },
+
+            setUserInterfaceMethodes:function(){ //UI wird aktualisiert
                 var oStop=this._sStopParameterModel.getProperty("/Stop");
 
-                this.swapInputMode();
-                this.setNveStoptitle(oStop);
-                //this._navigationHandler.setGlobalValuables(this._bStopSequenceChangeable, this._bManuelInput, this._IvIdEumDev, this._IvIdTr, this._oRouter);
-                this.setTitleForNveTree();
-                this.setFocusNveHandlingPage();
+                this.swapInputMode(); //Eingabemodus vorheriger Seiten wird übernommen
+                this.setNveStoptitle(oStop); //Titel der Seite wird angepasst
+                this.setTitleForNveTree(); //Anzeige der verbleibenden NVEs wird angepasst
+                this.setFocusNveHandlingPage(); //Fokus in das Eingabefeld
             },
 
             ChangeFromManToScan:function(){
@@ -451,7 +416,6 @@ sap.ui.define([
             },
 
             spliceClearedArray:function(oNve){ //Nachdem NVE verladen wurde, muss sie aus den Klärungen entfernt werden
-                //var _aClearedNvesOfTour=this.getView().getModel("ClearedNves").getProperty("/results");
                 var _aClearedNvesOfTour=this.getOwnerComponent().getModel("ClearedNves").getProperty("/results");
                 var iIndex=_aClearedNvesOfTour.indexOf(oNve);
                 if(iIndex!==-1){
@@ -460,7 +424,6 @@ sap.ui.define([
             },
 
             saveInAllNveArray:function(oNve){ //Speichern einer NVE, sofern sie behandelt wurde und noch nicht vermerkt ist
-                //var _aAllNvesOfTour=this.getView().getModel("AllNvesOfTour").getProperty("/results");
                 var _aAllNvesOfTour=this.getOwnerComponent().getModel("AllNvesOfTour").getProperty("/results");
                 if(_aAllNvesOfTour.indexOf(oNve)===-1){
                     _aAllNvesOfTour.push(oNve);
@@ -616,13 +579,11 @@ sap.ui.define([
                 }
             },
             
-
-            
             getLastStopOfList:function(){ //Der Letzte Stopp in der Liste wird
                 var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
                 var aFilteredStops=this.filterFinishedStops(aStops);
                 var oLastStopOfList=aFilteredStops[aFilteredStops.length-1];
-
+                //this.setStopParameterModel(oLastStopOfList);
                 this.callNavigationHandler(oLastStopOfList);
             },
             
@@ -630,7 +591,6 @@ sap.ui.define([
             getSelectedNveForPhotoModel:function(oSelectedItem){
                 var oTreeOfNves=this.getView().byId("TreeOfNves");
                 var iIndexSelectedNve=oTreeOfNves.getItems().indexOf(oSelectedItem);
-                //var oNveModel=this.getView().getModel("NVEs");
                 var oNveModel=this.getOwnerComponent().getModel("NVEs");
                 var oNve=oNveModel.getProperty("/results")[iIndexSelectedNve];
                 this.setPhotoInputValue(oNve);
@@ -639,6 +599,10 @@ sap.ui.define([
             ///////////////////////////////////////
             //set-Methoden
             ///////////////////////////////////////
+
+            setStopParameterModel:function(oStop){ //Setzen des Models für die nächste Seite & Navigation
+                this.getOwnerComponent().getModel("StopParameterModel").setProperty("/Stop", oStop);
+            },
 
             resetNveInputFields:function(){ //Leeren der Inputfelder für die NVEs + Focus setzen
                 this.getView().byId("ManInputNve").setValue("");
@@ -836,6 +800,7 @@ sap.ui.define([
                 if(aStops.length>0){
                     this.getNextStopInLine();
                 } else{
+                    this.onNavToTourConclusionPage();
                     //this.setInterNvesinClearModel(); //Klärgrund-NVEs für die Abschlussübersicht vorbereiten
                 }
             },
@@ -852,8 +817,17 @@ sap.ui.define([
             //Navigation
             ///////////////////////////////////////
 
+            onNavToTourConclusionPage:function(){
+                this._oRouter.navTo("RouteTourConclusion",{ 
+                    sStopSequenceChangeable:this._bStopSequenceChangeable, 
+                    bManuelInput:this._bManuelInput,
+                    IvIdEumDev:this._IvIdEumDev,
+                    IvIdTr:this._IvIdTr
+                });
+            },
+
             onNavigationBack:function(){
-                this._oRouter.navTo("RouteStopsOfTour",{ //TourParameterModel
+                this._oRouter.navTo("RouteStopsOfTour",{
                     sStopSequenceChangeable:this._bStopSequenceChangeable, 
                     bManuelInput:this._bManuelInput,
                     IvIdEumDev:this._IvIdEumDev,
@@ -862,7 +836,7 @@ sap.ui.define([
             },
 
             onNavToInterdepotPage:function(){
-                this._oRouter.navTo("RouteInterdepotTour",{ //StopParameterModel
+                this._oRouter.navTo("RouteInterdepotTour",{
                     sStopSequenceChangeable:this._bStopSequenceChangeable, 
                     bManuelInput:this._bManuelInput,
                     IvIdEumDev:this._IvIdEumDev,
@@ -962,7 +936,7 @@ sap.ui.define([
                 MessageBox.error(this._i18nModel.getText("inputTooShort_1")+" '"+sInput+ "' "+this._i18nModel.getText("inputTooShort_2"), {
                     onClose:function(){
                         this.resetNveInputFields();
-                        this.resetInputFields("ManInputClosingNve", "ScanInputClosingNve");
+                        this.resetInputFields("ManInputNve", "ScanInputNve");
                     }.bind(this)
                 });
             },

@@ -166,6 +166,12 @@
           "results": []
         }
       },
+      "sortedNveModel": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "sortedNves": []
+        }
+      },
       "ErrorLog": {
         "type": "sap.ui.model.json.JSONModel",
         "settings": {
@@ -225,6 +231,13 @@
           "target": [
             "TargetToCustomer"
           ]
+        },
+        {
+          "name": "RouteTourConclusion",
+          "pattern": "RouteTourConclusion",
+          "target": [
+            "TargetTourConclusion"
+          ]
         }
       ],
       "targets": {
@@ -256,6 +269,14 @@
           "viewId": "toCustomerPage",
           "viewName": "ToCustomer"
         },
+        "TargetTourConclusion": {
+          "viewType": "XML",
+          "transition": "slide",
+          "clearControlAggregation": false,
+          "viewId": "tourConclusionPage",
+          "viewName": "TourConclusion"
+        }
+        ,
         "TargetInterdepotTour": {
           "viewType": "XML",
           "transition": "slide",
