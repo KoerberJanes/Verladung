@@ -32,8 +32,6 @@ sap.ui.define([
 
                 this._oRouter = this.getOwnerComponent().getRouter();
 			    this._oRouter.getRoute("RouteNveHandling").attachPatternMatched(this.onObjectMatched, this);
-                //this.initiateScanner();
-                this._navigationHandler.registerNavigationHandler(this);
             },
 
             onAfterRendering:function(){
@@ -94,9 +92,47 @@ sap.ui.define([
             */
 
             callNavigationHandler:function(oStop){ //TODO:Bis hierher funktioniert die Logik! Morgen prüfen
+                /*
                 var oNveModel=this.getOwnerComponent().getModel("NVEs");
                 var oInterdepotModel=this.getOwnerComponent().getModel("InterdepotNVEs");
                 this._navigationHandler.getNvesOfStop(oStop, oNveModel, oInterdepotModel); // this._oRouter --> war auch ein Parameter
+                */
+                var oResponseModel=this.getOwnerComponent().getModel("Response");
+               this.busyDialogOpen();
+               this._navigationHandler.getNvesOfStop(oStop, this._IvIdEumDev, this._IvIdTr, oResponseModel);
+               this.getKindOfStop();
+            },
+
+            getKindOfStop:function(){
+                var oResponseModel=this.getOwnerComponent().getModel("Response");
+                var aResponseNves=oResponseModel.getProperty("/results");
+                
+                if(oResponseModel.isInterdepot==true){
+                    this.setNvesOfStop_InterdepotCase(aResponseNves);
+                } else{
+                    this.setNvesOfStop_CustomerCase(aResponseNves);
+                }
+
+            },
+
+            setNvesOfStop_InterdepotCase:function(aResponseNves){ //Hier werden alle Methoden für den Fall eines Interdepot Stopps abgehandelt
+                var oInterdepotModel=this.getOwnerComponent().getModel("InterdepotNVEs");
+                //TODO: Aufbau der NVEs muss noch gemacht werden (also das TreeModel)
+                oInterdepotModel.setProperty("/results", aResponseNves);
+                oInterdepotModel.refresh();
+                //this.navToInterdepotPage();
+                //TODO: weitere UI Methoden
+                this.busyDialogClose();
+            },
+    
+            setNvesOfStop_CustomerCase:function(aResponseNves){ //Hier werden alle Methoden für den Fall eines Kunden Stopps abgehandelt
+                var oNveModel=this.getOwnerComponent().getModel("NVEs");
+                //TODO: Aufbau der NVEs muss noch gemacht werden (also das TreeModel)
+                oNveModel.setProperty("/results", aResponseNves);
+                oNveModel.refresh();
+                //this.navToNveHandling();
+                //TODO: weitere UI Methoden
+                this.busyDialogClose();
             },
 
             //TODO: Hier weiterarbeiten nach dem Muster der StopsOfTour-Page
@@ -116,7 +152,7 @@ sap.ui.define([
 
                 this.swapInputMode();
                 this.setNveStoptitle(oStop);
-                this._navigationHandler.setGlobalValuables(this._bStopSequenceChangeable, this._bManuelInput, this._IvIdEumDev, this._IvIdTr, this._oRouter);
+                //this._navigationHandler.setGlobalValuables(this._bStopSequenceChangeable, this._bManuelInput, this._IvIdEumDev, this._IvIdTr, this._oRouter);
                 this.setTitleForNveTree();
                 this.setFocusNveHandlingPage();
             },
@@ -445,10 +481,9 @@ sap.ui.define([
                 this.setTitleForNveTree(); //Hier evtl. nicht von Nöten, macht es nur hübscher
             },
 
-            spliceStop:function(sTitleOfPage){ //Entfernen des abgearbeiteten Stopps aus dem Model/ der Liste
-                //var aStops=this.getView().getModel("Stops").getProperty("/results");
+            spliceStop:function(){ //Entfernen des abgearbeiteten Stopps aus dem Model/ der Liste
                 var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
-                var sCurrentStop=this.getView().byId(sTitleOfPage).getText();
+                var sCurrentStop=this.getView().byId("NveHandlingPageTitle").getText();
                 var iIndexCurrentStop;
 
                 for(var i in aStops){
@@ -459,7 +494,7 @@ sap.ui.define([
                     }
                 }
                 aStops.splice(iIndexCurrentStop, 1); 
-                this.getOwnerComponent().getModel("Stops").refresh();
+                //this.getOwnerComponent().getModel("Stops").refresh(); //Eventuell unnötig
                 this.checkIfNextStopAvailable(); //Prüfen ob der nächste Stopp verfügbar ist
             },
 
@@ -560,7 +595,8 @@ sap.ui.define([
             },
 
             
-            getNextStopInLine:function(aStops){ //Erhalten des nächsten Stops, abhängig von der derzeitigen Location
+            getNextStopInLine:function(){ //Erhalten des nächsten Stops, abhängig von der derzeitigen Location
+                var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
                 var sCurrentStopTitle=this.getView().byId("NveHandlingPageTitle").getText();
                 var sCurrentStopNumber=sCurrentStopTitle.substring(0, 3);
                 var iNextStopIndex=undefined;
@@ -649,17 +685,6 @@ sap.ui.define([
 
             setSendConsoleLogFocus:function(){
                 this.setFocusNveHandlingPage();
-            },
-
-            setNvesOfStop_InterdepotCase:function(aoDataResults){ //Hier werden alle Methoden für den Fall eines Interdepot Stopps abgehandelt
-                //TODO: Aufbau der NVEs muss noch gemacht werden (also das TreeModel)
-                this.getOwnerComponent().getModel("InterdepotNVEs").setProperty("/results", aoDataResults);
-                this.onNavToInterdepotPage();
-            },
-
-            setNvesOfStop_CustomerCase:function(aoDataResults){ //Hier werden alle Methoden für den Fall eines Kunden Stopps abgehandelt
-                //TODO: Aufbau der NVEs muss noch gemacht werden (also das TreeModel)
-                this.getOwnerComponent().getModel("NVEs").setProperty("/results", aoDataResults);
             },
 
             ///////////////////////////////////////
@@ -775,7 +800,7 @@ sap.ui.define([
                 var aNves=oModel.getProperty("/results");
 
                 if(aNves.length===0){ //Wenn keine NVEs mehr vorhanden sind, den Stop splicen
-                    this.spliceStop("NveHandlingPageTitle");
+                    this.spliceStop();
                 }
             },
 
@@ -793,7 +818,7 @@ sap.ui.define([
             CheckIfModelIsEmpty:function(){ //Wenn eine NVE verladen wurde soll geprüft werden, ob noch eine NVE zu diesem Stopp existiert
                 var aTreeNves=this.getOwnerComponent().getModel("NVEs").getProperty("/results");
                 if(aTreeNves.length===0){ //Wenn keine weitere NVE --> Löschen des Stops aus der Übersicht
-                    this.spliceStop("NveHandlingPageTitle");
+                    this.spliceStop();
                 }
             },
 
@@ -809,7 +834,7 @@ sap.ui.define([
                 var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
                 
                 if(aStops.length>0){
-                    this.getNextStopInLine(aStops);
+                    this.getNextStopInLine();
                 } else{
                     //this.setInterNvesinClearModel(); //Klärgrund-NVEs für die Abschlussübersicht vorbereiten
                 }

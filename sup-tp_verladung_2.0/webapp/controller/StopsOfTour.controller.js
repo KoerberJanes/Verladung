@@ -48,7 +48,7 @@ sap.ui.define([
                 this._oRouter = this.getOwnerComponent().getRouter();
 			    this._oRouter.getRoute("RouteStopsOfTour").attachPatternMatched(this.onObjectMatched, this);
                 this.initiateScanner();
-                this._navigationHandler.registerNavigationHandler(this);
+                //this._navigationHandler.registerNavigationHandler(this);
             },
 
             onAfterRendering:function(){
@@ -88,7 +88,7 @@ sap.ui.define([
                 this._bManuelInput=(/true/).test(oParameters.bManuelInput); //wird von String zu Boolean abgeändert
                 this._IvIdEumDev=oParameters.IvIdEumDev;
                 this._IvIdTr=oParameters.IvIdTr;
-                this._navigationHandler.setGlobalValuables(this._bStopSequenceChangeable, this._bManuelInput, this._IvIdEumDev, this._IvIdTr, this._oRouter);
+                //this._navigationHandler.setGlobalValuables(this._bStopSequenceChangeable, this._bManuelInput, this._IvIdEumDev, this._IvIdTr, this._oRouter);
                 this.swapInputMode();
                 this.getTourStops(this._oTour);
                 this.setTourTitle(this._oTour);
@@ -514,15 +514,49 @@ sap.ui.define([
                 if(iNextStopIndex===undefined){ //Es existiert keine geringere Stoppnummer, also wird der letzte Stopp aus der Liste genommen 
                     this.getLastStopOfList();
                 } else{
-                    //this.getNvesOfStop(aStops[iNextStopIndex]);
                     this.callNavigationHandler(aStops[iNextStopIndex]);
                 }
             },
 
             callNavigationHandler:function(oStop){
-                var oNveModel=this.getOwnerComponent().getModel("NVEs");
+                this.busyDialogOpen();
+                var oResponseModel=this.getOwnerComponent().getModel("Response");
+               this._navigationHandler.getNvesOfStop(oStop, this._IvIdEumDev, this._IvIdTr, oResponseModel);
+               this.getKindOfStop();
+            },
+
+            getKindOfStop:function(){
+                var oResponseModel=this.getOwnerComponent().getModel("Response");
+                var aResponseNves=oResponseModel.getProperty("/results");
+                
+                if(oResponseModel.isInterdepot==true){
+                    this.setNvesOfStop_InterdepotCase(aResponseNves);
+                } else{
+                    this.setNvesOfStop_CustomerCase(aResponseNves);
+                }
+
+            },
+
+            setNvesOfStop_InterdepotCase:function(aResponseNves){ //Hier werden alle Methoden für den Fall eines Interdepot Stopps abgehandelt
                 var oInterdepotModel=this.getOwnerComponent().getModel("InterdepotNVEs");
-                this._navigationHandler.getNvesOfStop(oStop, oNveModel, oInterdepotModel); //, this._oRouter (war vorher auch als Parameter dabei, eigentlich unnötig)
+                //TODO: Aufbau der NVEs muss noch gemacht werden (also das TreeModel)
+                oInterdepotModel.setProperty("/results", aResponseNves);
+                oInterdepotModel.refresh();
+                //this.navToInterdepotPage();
+                //TODO: weitere UI Methoden
+                this.busyDialogClose();
+                this.onNavToInterdepotNveHandling();
+            },
+    
+            setNvesOfStop_CustomerCase:function(aResponseNves){ //Hier werden alle Methoden für den Fall eines Kunden Stopps abgehandelt
+                var oNveModel=this.getOwnerComponent().getModel("NVEs");
+                //TODO: Aufbau der NVEs muss noch gemacht werden (also das TreeModel)
+                oNveModel.setProperty("/results", aResponseNves);
+                oNveModel.refresh();
+                //this.navToNveHandling();
+                //TODO: weitere UI Methoden
+                this.busyDialogClose();
+                this.onNavToNveHandling();
             },
 
             ///////////////////////////////////////
@@ -623,7 +657,6 @@ sap.ui.define([
 
             setStopParameterModel:function(oStop){ //Setzen des Models, welches für die nächste Seite & Navigation
                 this.getOwnerComponent().getModel("StopParameterModel").setProperty("/Stop", oStop);
-                this.onNavToNveHandling();
             },
 
             ///////////////////////////////////////

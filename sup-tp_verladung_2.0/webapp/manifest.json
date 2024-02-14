@@ -160,6 +160,12 @@
           "selectOptions": []
         }
       },
+      "Response": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "results": []
+        }
+      },
       "ErrorLog": {
         "type": "sap.ui.model.json.JSONModel",
         "settings": {

@@ -1,24 +1,13 @@
-sap.ui.define([], function () {
+sap.ui.define([
+    "sap/ui/model/json/JSONModel"
+], function (JSONModel) {
     "use strict";
 
     return {
-
-        registerNavigationHandler: function(callback){
-            this._callbackFunction = callback;
-            //console.log("Routing registered");
-        },
-
-        setGlobalValuables:function(bStopSequenceChangeable, bManuelInput, IvIdEumDev, IvIdTr, oRouter){
-            this._bStopSequenceChangeable=bStopSequenceChangeable; 
-            this._bManuelInput=Boolean(bManuelInput);
-            this._IvIdEumDev=IvIdEumDev;
-            this._IvIdTr=IvIdTr;
-            this._oRouter=oRouter;
-        },
-
-        getNvesOfStop:function(oStop, oNveModel, oInterdepotModel){ //Stopp wird übergeben und die NVEs im Backend erfragt
+        
+        getNvesOfStop:function(oStop, _IvIdEumDev, _IvIdTr, oResponseModel){ //Stopp wird übergeben und die NVEs im Backend erfragt
             
-            var sPathPos = "/GetFusLoadSet(IvIdEumDev='" + this._IvIdEumDev + "',IvIdTr='" + this._IvIdTr + "',IvNoStop='" + oStop.NoStop + "')"; // Id
+            var sPathPos = "/GetFusLoadSet(IvIdEumDev='" + _IvIdEumDev + "',IvIdTr='" + _IvIdTr + "',IvNoStop='" + oStop.NoStop + "')"; // Id
             
             //!BackendAufruf auskommentiert da keine Anbindung in privatem VsCode
             
@@ -77,47 +66,19 @@ sap.ui.define([], function () {
             }
 
             //Testfall
-            //this.checkIfStopSequenceNeedsToBeUpdated();
-            this.checkKindOfStop(aoDataResults, oNveModel, oInterdepotModel);
+            this.setKindOfStop(aoDataResults, oResponseModel);
         },
 
-        checkKindOfStop:function(aoDataResults, oNveModel, oInterdepotModel){
+        setKindOfStop:function(aoDataResults, oResponseModel){
+
             if(aoDataResults[0].FlgInterdepot){ //Handelt sich um einen Interdepot-Stopp
-                this.setNvesOfStop_InterdepotCase(aoDataResults, oInterdepotModel);
+                oResponseModel.isInterdepot=true;
             } else{ //Handelt sich um einen Kunden-Stopp
-                this.setNvesOfStop_CustomerCase(aoDataResults, oNveModel);
+                oResponseModel.isInterdepot=false;
             }
+            oResponseModel.setProperty("/results", []); //Nur zur SIcherheit, dass keine "Reste" mehr vorhanden sind
+            oResponseModel.setProperty("/results", aoDataResults); //GGf wird hier implizit schon das Array überschrieben
         },
-
-        setNvesOfStop_InterdepotCase:function(aoDataResults, oInterdepotModel){ //Hier werden alle Methoden für den Fall eines Interdepot Stopps abgehandelt
-            //TODO: Aufbau der NVEs muss noch gemacht werden (also das TreeModel)
-            oInterdepotModel.setProperty("/results", aoDataResults);
-            this.navToInterdepotPage();
-        },
-
-        setNvesOfStop_CustomerCase:function(aoDataResults, oNveModel){ //Hier werden alle Methoden für den Fall eines Kunden Stopps abgehandelt
-            //TODO: Aufbau der NVEs muss noch gemacht werden (also das TreeModel)
-            oNveModel.setProperty("/results", aoDataResults);
-            this.navToNveHandling();
-        },
-
-        navToInterdepotPage:function(){
-            this._oRouter.navTo("RouteInterdepotTour",{
-                sStopSequenceChangeable:this._bStopSequenceChangeable, 
-                bManuelInput:this._bManuelInput,
-                IvIdEumDev:this._IvIdEumDev,
-                IvIdTr:this._IvIdTr
-            });
-        },
-
-        navToNveHandling: function() {
-            this._oRouter.navTo("RouteNveHandling",{ 
-                sStopSequenceChangeable:this._bStopSequenceChangeable, 
-                bManuelInput:this._bManuelInput, 
-                IvIdEumDev:this._IvIdEumDev,
-                IvIdTr:this._IvIdTr
-            });
-        }
         
     };
 });

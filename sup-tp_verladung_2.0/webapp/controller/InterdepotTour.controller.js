@@ -44,9 +44,15 @@ sap.ui.define([
             },
 
             callNavigationHandler:function(oStop){
+                var oResponseModel=this.getOwnerComponent().getModel("Response");
+                /*
                 var oNveModel=this.getOwnerComponent().getModel("NVEs");
                 var oInterdepotModel=this.getOwnerComponent().getModel("InterdepotNVEs");
-                this._navigationHandler.getNvesOfStop(oStop, oNveModel, oInterdepotModel); //, this._oRouter --> war mal Parameter
+                this._navigationHandler.getNvesOfStop(oStop, oNveModel, oInterdepotModel);
+                */
+               this.busyDialogOpen();
+               this._navigationHandler.getNvesOfStop(oStop, this._IvIdEumDev, this._IvIdTr, oResponseModel);
+               this.getKindOfStop();
             },
 
             onObjectMatched:function(oEvent){
@@ -418,16 +424,36 @@ sap.ui.define([
             setSendConsoleLogFocus:function(){
                 this.setFocusInterdepotNvePage();
             },
+            getKindOfStop:function(){
+                var oResponseModel=this.getOwnerComponent().getModel("Response");
+                var aResponseNves=oResponseModel.getProperty("/results");
+                
+                if(oResponseModel.isInterdepot==true){
+                    this.setNvesOfStop_InterdepotCase(aResponseNves);
+                } else{
+                    this.setNvesOfStop_CustomerCase(aResponseNves);
+                }
 
-            setNvesOfStop_InterdepotCase:function(aoDataResults){ //Hier werden alle Methoden für den Fall eines Interdepot Stopps abgehandelt
-                //TODO: Aufbau der NVEs muss noch gemacht werden (also das TreeModel)
-                this.getOwnerComponent().getModel("InterdepotNVEs").setProperty("/results", aoDataResults);
             },
 
-            setNvesOfStop_CustomerCase:function(aoDataResults){ //Hier werden alle Methoden für den Fall eines Kunden Stopps abgehandelt
+            setNvesOfStop_InterdepotCase:function(aResponseNves){ //Hier werden alle Methoden für den Fall eines Interdepot Stopps abgehandelt
+                var oInterdepotModel=this.getOwnerComponent().getModel("InterdepotNVEs");
                 //TODO: Aufbau der NVEs muss noch gemacht werden (also das TreeModel)
-                this.getOwnerComponent().getModel("NVEs").setProperty("/results", aoDataResults);
-                this.onNavToNveHandling();
+                oInterdepotModel.setProperty("/results", aResponseNves);
+                oInterdepotModel.refresh();
+                //this.navToInterdepotPage();
+                //TODO: weitere UI Methoden
+                this.busyDialogClose();
+            },
+    
+            setNvesOfStop_CustomerCase:function(aResponseNves){ //Hier werden alle Methoden für den Fall eines Kunden Stopps abgehandelt
+                var oNveModel=this.getOwnerComponent().getModel("NVEs");
+                //TODO: Aufbau der NVEs muss noch gemacht werden (also das TreeModel)
+                oNveModel.setProperty("/results", aResponseNves);
+                oNveModel.refresh();
+                //this.navToNveHandling();
+                //TODO: weitere UI Methoden
+                this.busyDialogClose();
             },
 
             ///////////////////////////////////////
