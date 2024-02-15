@@ -26,7 +26,7 @@ sap.ui.define([
             onInit: function () {
                 this._IvIdEumDev="";
                 this._IvIdTr="";
-                this._oStopModel="";
+                this._sStopParameterModel="";
                 this._bStopSequenceChangeable=true;
                 this._bManuelInput=false;
                 this._navigationHandler=navigationHandler;
@@ -34,7 +34,6 @@ sap.ui.define([
 
                 this._oRouter = this.getOwnerComponent().getRouter();
 			    this._oRouter.getRoute("RouteInterdepotTour").attachPatternMatched(this.onObjectMatched, this);
-                this._navigationHandler.registerNavigationHandler(this);
             },
 
             onAfterRendering:function(){
@@ -46,15 +45,15 @@ sap.ui.define([
             },
 
             callNavigationHandler:function(oStop){
+                this.busyDialogOpen();
                 var oResponseModel=this.getOwnerComponent().getModel("Response");
-                /*
-                var oNveModel=this.getOwnerComponent().getModel("NVEs");
-                var oInterdepotModel=this.getOwnerComponent().getModel("InterdepotNVEs");
-                this._navigationHandler.getNvesOfStop(oStop, oNveModel, oInterdepotModel);
-                */
-               this.busyDialogOpen();
-               this._navigationHandler.getNvesOfStop(oStop, this._IvIdEumDev, this._IvIdTr, oResponseModel);
-               this.getKindOfStop();
+                this.setStopParameterModel(oStop);
+                this._navigationHandler.getNvesOfStop(oStop, this._IvIdEumDev, this._IvIdTr, oResponseModel);
+                this.getKindOfStop();
+            },
+
+            setStopParameterModel:function(oStop){ //Setzen des Models für die nächste Seite & Navigation
+                this.getOwnerComponent().getModel("StopParameterModel").setProperty("/Stop", oStop);
             },
 
             onObjectMatched:function(oEvent){
@@ -63,35 +62,14 @@ sap.ui.define([
             },
 
             setGlobalParameters:function(oParameters){
-
-                this._oStopModel=oParameters.StopParameterModel;
-                this._bStopSequenceChangeable=oParameters.sStopSequenceChangeable;
+                this._sStopParameterModel=this.getOwnerComponent().getModel("StopParameterModel");
                 this._IvIdEumDev=oParameters.IvIdEumDev;
                 this._IvIdTr=oParameters.IvIdTr;
 
                 this._bManuelInput=(/true/).test(oParameters.bManuelInput); //Kommt als String an, obwohl hier ein Boolean erwartet wird
                 this._bStopSequenceChangeable=(/true/).test(oParameters.sStopSequenceChangeable);
-                var oStop=this.getOwnerComponent().getModel("StopParameterModel").getProperty("/Stop");
-                
-                this.setInterdepotStopTitle(oStop);
-                this._navigationHandler.setGlobalValuables(this._bStopSequenceChangeable, this._bManuelInput, this._IvIdEumDev, this._IvIdTr, this._oRouter);
-                this.setTitleForInterdepotTree();
+                this.setUserInterfaceMethodes();
             },
-
-            /*
-            Methode hier nicht notwendig, da keine Inpurfelder vorhanden sind
-            swapInputMode:function(){ //Labels wurden aus Platz-Gründen entfernt --> Der Wechsel zwischen custom Inputfeldern und den Normalen wird vollzogen
-                
-                if(this._bManuelInput){
-                    this.getView().byId("ScanInputNve").setVisible(false);
-                    this.getView().byId("ManInputNve").setVisible(true);
-                } else{
-                    this.getView().byId("ScanInputNve").setVisible(true);
-                    this.getView().byId("ManInputNve").setVisible(false);
-                }
-            },
-            */
-
 
             ///////////////////////////////////////
             //Backend
@@ -103,7 +81,7 @@ sap.ui.define([
             },
 
             sendLog:function(oErrorTextField){ //TODO: Prüfen ob Array/Objekte oder Text gesendet werden soll
-                //this.onBusyDialogOpen();
+                //this.busyDialogOpen();
                 var oModel = this.getView().getModel("TP_VERLADUNG_SRV");
                 var oCreateData = {
                     "IdEumDev": this._IvIdEumDev,
@@ -141,7 +119,7 @@ sap.ui.define([
             },
 
             getNvesOfStop:function(oStop){ //Stopp wird übergeben und die NVEs im Backend erfragt
-                //this.onBusyDialogOpen();
+                //this.busyDialogOpen();
                 var sPathPos = "/GetFusLoadSet(IvIdEumDev='" + this._IvIdEumDev + "',IvIdTr='" + this._IvIdTr + "',IvNoStop='" + oStop.NoStop + "')"; // Id
                 
                 //!BackendAufruf auskommentiert da keine Anbindung in privatem VsCode
@@ -250,7 +228,6 @@ sap.ui.define([
             ///////////////////////////////////////
 
             onLoadInterdepotNves:function(){ //Methode für das Quittieren von Interdepot NVEs
-                //var aInterdepotNves=this.getView().getModel("InterdepotNVEs").getProperty("/results");
                 var aInterdepotNves= this.getOwnerComponent().getModel("InterdepotNVEs").getProperty("/results");
 
                 for(var i in aInterdepotNves){//Beide Methoden erwarten eine Einzelne NVE, deshalb die Schleife
@@ -285,13 +262,13 @@ sap.ui.define([
                 var aInterdepotNves=oModel.getProperty("/results");
 
                 if(aInterdepotNves.length===0){ //Wenn keine NVEs mehr vorhanden sind, den Stop splicen
-                    this.spliceStop("InterdepotPageTitle");//!Testen
+                    this.spliceStop();
                 }
             },
 
-            spliceStop:function(sTitleOfPage){ //Entfernen des abgearbeiteten Stopps aus dem Model/ der Liste
+            spliceStop:function(){ //Entfernen des abgearbeiteten Stopps aus dem Model/ der Liste
                 var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
-                var sCurrentStop=this.getView().byId(sTitleOfPage).getText();
+                var sCurrentStop=this.getView().byId("InterdepotPageTitle").getText();
                 var iIndexCurrentStop;
 
                 for(var i in aStops){
@@ -302,8 +279,8 @@ sap.ui.define([
                     }
                 }
                 aStops.splice(iIndexCurrentStop, 1); 
-                //this.getView().getModel("Stops").refresh(); //!wird wohl nicht benötigt, weil das Model nicht angezeigt wird
-                this.CheckNextStopAvailable(); //Prüfen ob der nächste Stopp verfügbar ist
+                //this.getView().getModel("Stops").refresh(); //Eventuell unnötig
+                this.checkIfNextStopAvailable(); //Prüfen ob der nächste Stopp verfügbar ist
             },
 
             UpdateStopSequence:function(){ 
@@ -346,13 +323,13 @@ sap.ui.define([
             //check-/finder-Methoden
             ///////////////////////////////////////
 
-            CheckNextStopAvailable:function(){ //Abhängig von der Stopp-Liste wird entweder der nächste Stopp oder die Abschlussübersicht vorbereitet
-                
+            checkIfNextStopAvailable:function(){ //Abhängig von der Stopp-Liste wird entweder der nächste Stopp oder die Abschlussübersicht vorbereitet
                 var aStops=this.getView().getModel("Stops").getProperty("/results");
                 
                 if(aStops.length>0){
-                    this.getNextStopInLine(aStops);
+                    this.getNextStopInLine();
                 } else{
+                    this.onNavToTourConclusionPage();
                     //this.setInterNvesinClearModel(); //Klärgrund-NVEs für die Abschlussübersicht vorbereiten
                 }
             },
@@ -379,6 +356,7 @@ sap.ui.define([
 
             //!Hier diese Methode muss noch getestet werden
             getNextStopInLine:function(aStops){ //Erhalten des nächsten Stops, abhängig von der derzeitigen Location
+                var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
                 var sCurrentStopTitle=this.getView().byId("InterdepotPageTitle").getText();
                 var sCurrentStopNumber=sCurrentStopTitle.substring(0, 3);
                 var iNextStopIndex=undefined;
@@ -394,7 +372,7 @@ sap.ui.define([
                 if(iNextStopIndex===undefined){ //Es existiert keine geringere Stoppnummer, also wird der letzte Stopp aus der Liste genommen 
                     this.getLastStopOfList();
                 } else{
-                    this.getNvesOfStop(aStops[iNextStopIndex]);
+                    this.callNavigationHandler(aStops[iNextStopIndex]);
                 }
             },
 
@@ -435,6 +413,14 @@ sap.ui.define([
                 } else{
                     this.setNvesOfStop_CustomerCase(aResponseNves);
                 }
+                this.setUserInterfaceMethodes();
+            },
+
+            setUserInterfaceMethodes:function(){ //UI wird aktualisiert
+                var oStop=this._sStopParameterModel.getProperty("/Stop");
+
+                this.setInterdepotStopTitle(oStop); //Titel der Seite wird angepasst
+                this.setTitleForInterdepotTree(); //Anzeige der verbleibenden NVEs wird angepasst
 
             },
 
@@ -460,22 +446,29 @@ sap.ui.define([
                 oNveModel.setProperty("/results", aResponseNves);//aSortedResponseNves wird hier später als Parameter erwartet
                 oNveModel.refresh();
                 this.busyDialogClose();
+                this.onNavToNveHandling();
             },
 
             ///////////////////////////////////////
             //Navigation
             ///////////////////////////////////////
 
+            onNavToTourConclusionPage:function(){
+                this._oRouter.navTo("RouteTourConclusion",{ 
+                    sStopSequenceChangeable:this._bStopSequenceChangeable, 
+                    bManuelInput:this._bManuelInput,
+                    IvIdEumDev:this._IvIdEumDev,
+                    IvIdTr:this._IvIdTr
+                });
+            },
+
             onNavToNveHandling: function() { //schließen vom Busy Dialog notwendig weil erst entschieden werden muss, auf welche Seite Navigiert wird
                 this._oRouter.navTo("RouteNveHandling",{
-                    StopParameterModel:"StopParameterModel", 
                     sStopSequenceChangeable:this._bStopSequenceChangeable, 
                     bManuelInput:this._bManuelInput, 
                     IvIdEumDev:this._IvIdEumDev,
                     IvIdTr:this._IvIdTr
                 });
-                //! Problem besteht darin, dass in der NVE handling direkt getNvesOfStop aufgerufen wird, muss überarbeitet werden
-                //! --> Lösung: StopParameterModel muss vorher mit neuem Stopp gefüllt werden.
             },
 
             onNavigationBack:function(){
@@ -523,7 +516,7 @@ sap.ui.define([
                 this.byId("sendConsoleLogToBackendDialog").close();
             },
 
-            onBusyDialogOpen:function(){
+            busyDialogOpen:function(){
                 this.oBusyDialog ??= this.loadFragment({
                     name: "suptpverladung2.0.view.fragments.BusyDialog"
                 });

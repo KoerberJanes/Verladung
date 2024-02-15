@@ -64,8 +64,8 @@ sap.ui.define([
                 this.busyDialogOpen();
                 var oResponseModel=this.getOwnerComponent().getModel("Response");
                 this.setStopParameterModel(oStop);
-               this._navigationHandler.getNvesOfStop(oStop, this._IvIdEumDev, this._IvIdTr, oResponseModel); //Util methode um oData und infos über Stopart zu erhalten
-               this.getKindOfStop();
+                this._navigationHandler.getNvesOfStop(oStop, this._IvIdEumDev, this._IvIdTr, oResponseModel); //Util methode um oData und infos über Stopart zu erhalten
+                this.getKindOfStop();
             },
 
             getKindOfStop:function(){ //Erfahren um welche Stopart es sich handelt und anpassen der Daten
@@ -91,6 +91,7 @@ sap.ui.define([
                 oInterdepotModel.setProperty("/results", aResponseNves); //aSortedResponseNves wird hier später als Parameter erwartet
                 oInterdepotModel.refresh();
                 this.busyDialogClose();
+                this.onNavToInterdepotPage();
             },
     
             setNvesOfStop_CustomerCase:function(aResponseNves){ //Hier werden alle Methoden für den Fall eines Kunden Stopps abgehandelt
@@ -960,6 +961,7 @@ sap.ui.define([
             },
 
             noNveForPhotoSelectedError:function(){ //Fehlermeldung, wenn keine NVE ausgewählt wurde um ein Foto dieser zu schießen
+                this.playBeepError();
                 MessageBox.error(this._i18nModel.getText("noNveFoPhotoSelected"), {
                     onClose:function(){
                         this.setFocusNveHandlingPage();

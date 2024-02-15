@@ -134,7 +134,7 @@ sap.ui.define([
             /////////////////////////////
 
             getToursForDriver:function(){ // Touren des angemeldeten Fahrers werden aus dem Backend geholt
-                //this.busyDialogOpen();
+                this.busyDialogOpen();
 
                 var today = new Date();
                 var mm = today.getMonth() + 1; //January is 0!
@@ -151,7 +151,7 @@ sap.ui.define([
                     filters: aFilters,
 
                     success: function (oData) {
-                        //this.busyDialogClose();
+                        this.busyDialogClose();
                         this.setDriverDescription(oData); //Setzen von Personenbezogenen Daten 
                         var aRecievedTours=oData.getProperty("/results");
 
@@ -163,18 +163,23 @@ sap.ui.define([
 
                     }.bind(this),
                     error: function(oError){
-                        //this.busyDialogClose();
+                        this.busyDialogClose();
                         //Bisher keine Funktion
                     }.bind(this)
                 });
                 */
                 //!Testfall
-                var oData=new JSONModel();
-                oData.setProperty("/results", [{DrvDesc: "DriverTest", LsDesc:"Licence Plate"}]);
-                this.setDriverDescription(oData);
-                //!Laden der Demo-Touren aus Component.js
-                var aToursFromDemo=this.getOwnerComponent().getModel("Tour").getProperty("/results");
-                this.handleRecievedTours(aToursFromDemo);
+                setTimeout(() => { 
+                    this.busyDialogClose(); 
+
+                    var oData=new JSONModel();
+                    oData.setProperty("/results", [{DrvDesc: "DriverTest", LsDesc:"Licence Plate"}]);
+                    this.setDriverDescription(oData);
+                    //!Laden der Demo-Touren aus Component.js
+                    var aToursFromDemo=this.getOwnerComponent().getModel("Tour").getProperty("/results");
+                    this.handleRecievedTours(aToursFromDemo);
+                    
+                },250);
             },
 
             onRefreshTours:function(){ //Touren werden vom Backend erneut geholt nachdem der Update Knopf gedrückt wurde
