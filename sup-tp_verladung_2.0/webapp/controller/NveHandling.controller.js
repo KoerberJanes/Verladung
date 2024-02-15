@@ -314,6 +314,55 @@ sap.ui.define([
                 },250);
             },
 
+            FuClearingSet:function(oNve, sErrorReason){
+                this.busyDialogOpen();
+                /*
+                var oModel = this.getView().getModel("TP_VERLADUNG_SRV");
+                var oCreateData = this.getView().getModel("StopsExpanded").oData;
+                
+                var oCreateData = {
+                    "IdEumDev": this._IvIdEumDev, // IdEumDev
+                    "IdTr": this._IvIdTr,
+                    "IvPickupNumber": 0, // Integer
+                    "Exidv": oNve.Exidv,
+                    "ErrorReason": sErrorReason, //Muss ich schauen, ob hier String oder Objekt verlangt wird (Ausgangssituation --> String)
+                    "Process": "L"
+                }
+                
+                oModel.create("/FuClearingSet", oCreateData, { 
+                    //Event für erfolgreiches Speichern der Daten
+                    success: function (oData) { //Speichern der verladenen NVE
+                        this.busyDialogClose();
+
+                        
+                    }.bind(this),
+                    error:function(oError){
+                        this.busyDialogClose();
+                        var sErrorMsg;
+
+                        try {
+                            sErrorMsg = JSON.parse(oError.responseText).error.message.value;
+                        } catch (err) {
+                            sErrorMsg = that.getResourceBundle().getText("msgBusinessException");
+                        }
+
+                        this.loadingFailedError(sErrorMsg);
+
+                    }.bind(this)
+                })
+
+                */
+               //!Für Demozwecke werden Methoden hier für den Success-Fall aufgerufen, der Error-Fall wurde vernachlässigt
+               setTimeout(() => { 
+                    this.busyDialogClose(); 
+                    this.onClearingDialogClose();
+
+                    this.saveClearedNve(oNve);
+                    this.spliceNveOutOfNveModel(oNve);
+                    this.CheckIfModelIsEmpty();
+            },250);
+            },
+
             sendNewStopOrderToBackend:function(){ //Versenden der neuen Stoppreihenfolge an das Backend
                 var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
                 /*
@@ -346,34 +395,80 @@ sap.ui.define([
                 */
             },
 
+            getClearSelectOptions:function(){
+                this.busyDialogOpen();
+                var sPathPos="/GetClearReasonSet";
+                var oFilter1=new Filter("IvIdEumDev", FilterOperator.EQ, this._IvIdEumDev);
+                var oFilter2=new Filter("IvPodMode", FilterOperator.EQ, "true");
+                var aFilters=[oFilter1, oFilter2];
+                /*
+                this.getView().getModel("TP_VERLADUNG_SRV").read(sPathPos, {
+                    filters: aFilters,
+
+                    success:function(oData){
+                        this.busyDialogClose();
+                        var aRecievedErrorReasons=oData.getProperty("/results");
+
+                        if(aRecievedErrorReasons.length===0){
+                            //Fehler
+                        } else{
+                            this.handleRecievedErrorReasons(aRecievedErrorReasons);
+                        }
+                    }.bind(this),
+
+                    error:function(oError){
+                        this.busyDialogClose();
+                        var sErrorMsg="";
+                        try{
+                            sErrorMsg=JSON.parse(oError.responseText).error.message.value;
+                        }catch{
+                            sErrorMsg=this.getResourceBundle().getText("msgBusinessException");
+                        }  
+                    }.bind(this)
+                })*/
+
+                //!Testfall
+                var booleanTest=false;
+                var aRecievedErrorReasons=[
+                    {Description: "Defekt", ErrorReason:"000", Flgload:"true"},
+                    {Description: "Falsche Ware", ErrorReason:"001", Flgload:"true"},
+                    {Description: "Teilweise Defekt (VL)", ErrorReason:"002", Flgload:"true"}
+                ];
+                if(booleanTest){
+                    console.log("TestFailed");
+                } else{
+                    this.handleRecievedErrorReasons(aRecievedErrorReasons);
+                }
+                this.onOpenClearingReasonDialog();
+            },
+
             ///////////////////////////////////////
             //Methoden für die Backend-Daten
             ///////////////////////////////////////
 
-            handleRecievedErrorReasons_AlreadyCleard:function(aRecievedErrorReasons){ //Klärmöglichkeiten für das Select in der Abschlussübersicht setzen
-                var oSelect=this.getView().byId("DialogAlreadyLoadedSelect");
+            handleRecievedErrorReasons:function(aRecievedErrorReasons){
+                var oSelectModel=this.getOwnerComponent().getModel("SelectModel");
+                var aErrorOptions=[];
 
-                var oItemTemplate = new Item({
-                    text: "{text}",
-                    key: "{ErrorReason}"
+                var oItemTemplate = new Item({ //nicht sicher ob ich das wirklich brauche
+                    Description: "{text}",
+                    ErrorReason: "{ErrorReason}"
                 });
 
-                for(var i in aRecievedErrorReasons){
-                    var oItem= new Item({
-                        text: aRecievedErrorReasons[i].Description,
-                        key: aRecievedErrorReasons[i].ErrorReason
-                    });
-
-                    if(aRecievedErrorReasons[i].Flgload){
-                        oSelect.addItem(oItem);
-                    }
-
-                    if(aRecievedErrorReasons[i].Description===this._i18nModel.getText("mainSelectedErrorReason")){
-                        oSelect.setSelectedItem(oItem);
+                for(var i in aRecievedErrorReasons){ //Für jede Option wird ein Element erstellt
+                    var oItem= {
+                        Description: aRecievedErrorReasons[i].Description,
+                        ErrorReason: aRecievedErrorReasons[i].ErrorReason
+                    };
+                    
+                    if(aRecievedErrorReasons[i].Flgload){ //Wenn laden --> hinzufügen zum Array an Optionen
+                        aErrorOptions.push(oItem);
                     }
                 }
 
-                this.onAlreadyLoadedDialogOpen();
+                oSelectModel.setProperty("/selectOptions", []);
+                oSelectModel.setProperty("/selectOptions", aErrorOptions);
+                this.busyDialogClose();
             },
 
             ///////////////////////////////////////
@@ -415,13 +510,33 @@ sap.ui.define([
                 }
             },
 
+            saveClearedNve:function(oNve){ //Speichern einer Verladenen NVE in "_aLoadedNvesOfTour", wenn sie darin noch nicht existiert
+                //this.checkIfLastTourWasTheSame(); 
+
+                var _aClearedNvesOfTour=this.getOwnerComponent().getModel("ClearedNves").getProperty("/results");
+                if(_aClearedNvesOfTour.indexOf(oNve)===-1){
+                    _aClearedNvesOfTour.push(oNve);
+                    this.spliceLoadedArray(oNve);
+                    this.saveInAllNveArray(oNve);
+                } else{
+                    this.onSwapFromLoadedToCleared();
+                }
+            },
+
             onSwapFromClearedToLoaded:function(){ //Wechseln des Status einer NVE von geklärt zu verladen
                 var oClearedNve=this.getOwnerComponent().getModel("alreadyClearedModel").getProperty("/info"); //Holen der NVE aus dem Model
                 var aClearedNvesOfTour=this.getOwnerComponent().getModel("").getProperty("/");
                 var aLoadedNvesOfTour=this.getOwnerComponent().getModel("").getProperty("/");
                 aClearedNvesOfTour.splice(aClearedNvesOfTour.indexOf(oClearedNve), 1); //Entfernen der NVE aus den geklärten NVEs
                 aLoadedNvesOfTour.push(oClearedNve); //Speichern der NVE in den verladenen NVEs
-                //this.onAlreadyClearedDialogClose(); //Schließen des "AlreadyCleared" Dialoges
+            },
+
+            onSwapFromLoadedToCleared:function(){ //Wechseln des Status einer NVE von geklärt zu verladen
+                var oClearedNve=this.getOwnerComponent().getModel("alreadyClearedModel").getProperty("/info"); //Holen der NVE aus dem Model
+                var aClearedNvesOfTour=this.getOwnerComponent().getModel("").getProperty("/");
+                var aLoadedNvesOfTour=this.getOwnerComponent().getModel("").getProperty("/");
+                aLoadedNvesOfTour.splice(aClearedNvesOfTour.indexOf(oClearedNve), 1); //Entfernen der NVE aus den verladenen NVEs
+                aClearedNvesOfTour.push(oClearedNve); //Speichern der NVE in den geklärten NVEs
             },
 
             spliceClearedArray:function(oNve){ //Nachdem NVE verladen wurde, muss sie aus den Klärungen entfernt werden
@@ -429,6 +544,14 @@ sap.ui.define([
                 var iIndex=_aClearedNvesOfTour.indexOf(oNve);
                 if(iIndex!==-1){
                     _aClearedNvesOfTour.splice(iIndex);
+                }
+            },
+
+            spliceLoadedArray:function(oNve){ //Nachdem NVE verladen wurde, muss sie aus den Klärungen entfernt werden
+                var _aLoadedNvesOfTour=this.getOwnerComponent().getModel("LoadedNves").getProperty("/results");
+                var iIndex=_aLoadedNvesOfTour.indexOf(oNve);
+                if(iIndex!==-1){
+                    _aLoadedNvesOfTour.splice(iIndex);
                 }
             },
 
@@ -677,10 +800,31 @@ sap.ui.define([
             onCheckIfNveIsSelected:function(){
                 var oSelectedItem=this.getView().byId("TreeOfNves").getSelectedItem();
                 if(oSelectedItem!==null){ //Navigation zur anderen Seite
-                    this.onOpenClearingReasonDialog();
+                    this.setNveForClearingDialog(oSelectedItem);
+                    //this.getClearSelectOptions();
                 } else{ //Dialog mit Fehler, dass Tour ausgewählt sein muss
                     this.noItemSelectedClearingError();
                 }
+            },
+
+            getNveAboutToClear:function(){
+                var oClearingDialogModel=this.getOwnerComponent().getModel("clearingDialogModel");
+                var oNveAboutToBeCleared=oClearingDialogModel.getProperty("/info"); //NVE die derzeit angezeigt wird
+                var sErrorReasonKey=this.getView().byId("DialogClearingSelect").getSelectedKey();
+                //KLär-Methonde aufrufen!
+                this.FuClearingSet(oNveAboutToBeCleared, sErrorReasonKey);
+            },
+
+            setNveForClearingDialog:function(oSelectedItem){
+                var oModel=this.getOwnerComponent().getModel("NVEs");
+                var oTree=this.getView().byId("TreeOfNves");
+                var iIndexSelectedNve=oTree.getItems().indexOf(oSelectedItem);
+                var oSelectedNveInModel=oModel.getProperty("/results")[iIndexSelectedNve];
+                var oClearingDialogModel=this.getOwnerComponent().getModel("clearingDialogModel");
+
+                oClearingDialogModel.setProperty("/info", []);
+                oClearingDialogModel.setProperty("/info", oSelectedNveInModel);
+                this.getClearSelectOptions();
             },
 
             searchUeberNves:function(sInput, sShortInput){ //In den Ü-NVEs wird gesucht ob eine NVE existiert, deren Exidv mit dem Input übereinstimmt

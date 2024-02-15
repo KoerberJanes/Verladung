@@ -21,13 +21,17 @@
                     <Label id="DialogClearingLabelCustomerInformation" text="{i18n>CustomerInformation}"></Label>
                     <Input id="DialogClearingInputCustomerInformation" value="{clearingDialogModel>/info/Customer}" placeholder="{i18n>CustomerInformationsPlaceholder}" editable="false" ></Input>
                     <Label id="DialogClearingLabelReason" text="{i18n>ChooseClearingReason}"></Label>
-                    <Select id="DialogClearingSelect"></Select>
+                    <Select id="DialogClearingSelect" items="{
+                        path:'SelectModel>/selectOptions'
+                    }">
+                        <core:Item key="{SelectModel>ErrorReason}" text="{SelectModel>Description}" />
+                    </Select>
                 </form:content>
             </form:SimpleForm>
         </content>
 
         <beginButton>
-            <Button id="DialogClearingButtonAccept" text="{i18n>confirm}" press="findNveAboutToClear"></Button>
+            <Button id="DialogClearingButtonAccept" text="{i18n>confirm}" press="getNveAboutToClear"></Button>
         </beginButton>
         
         <endButton>
