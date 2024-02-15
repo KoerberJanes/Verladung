@@ -328,7 +328,7 @@ sap.ui.define([
                     "ErrorReason": sErrorReason, //Muss ich schauen, ob hier String oder Objekt verlangt wird (Ausgangssituation --> String)
                     "Process": "L"
                 }
-                
+
                 oModel.create("/FuClearingSet", oCreateData, { 
                     //Event für erfolgreiches Speichern der Daten
                     success: function (oData) { //Speichern der verladenen NVE
@@ -1024,6 +1024,7 @@ sap.ui.define([
 
             onSendErrorsToBackendDialogClose:function(){
                 this.byId("sendConsoleLogToBackendDialog").close();
+                this.setFocusNveHandlingPage();
             },
 
             onOpenClearingReasonDialog: function() {
@@ -1142,7 +1143,7 @@ sap.ui.define([
                 MessageToast.show(this._i18nModel.getText("successfullySend"), {
                     duration: 1000,
                     width:"15em",
-                    onClose:this.setFocusonLatestTour()
+                    onClose:this.setFocusNveHandlingPage()
                 });
             }
         });

@@ -6,7 +6,6 @@ sap.ui.define([
 	return ManagedObject.extend("suptpverladung2.0.util.sortNveHandler", {
         //!Wird die Aufgabe übernehmen, den NVEs eine Hierarchie zu geben und sie zu Sortieren
 
-
         setAttributesForLoading:function(aRecievedNves, i18nModel){ //! Schwerer Teil, nochmal genau prüfen
 
             for(var i in aRecievedNves){

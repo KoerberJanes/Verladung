@@ -34,7 +34,7 @@
 
                 <form:SimpleForm id="tourConclusionForm_0" editable="true" layout="ResponsiveGridLayout" title="" labelSpanXL="2" labelSpanL="2" labelSpanM="2">
 					<form:content>
-                        <Text id="TourConclusionText" text="{i18n>tourConclusionTitle}" textAlign="Left"></Text>
+                        <Text id="TourConclusionText" text="{i18n>tourConclusionTextArea_1}" textAlign="Left"></Text> <!--Text später entfernen, controller msetzt Text-->
                     </form:content>
                 </form:SimpleForm>
 
@@ -51,15 +51,15 @@
 
                 <form:SimpleForm id="tourConclusionForm_1" editable="true" layout="ResponsiveGridLayout" title="" labelSpanXL="2" labelSpanL="2" labelSpanM="2">
                     <form:content>
-                        <Label id="ScanInputClosingLabel" text="{i18n>ScanInputNve}"></Label>
+                        <!--<Label id="ScanInputClosingLabel" text="{i18n>ScanInputNve}"></Label>-->
                         <ci:CustomInput id="ScanInputClosingNve" value="" submit="findEnteredClearedNve" type="Number" placeholder="{i18n>ScanInputNve}" tooltip="{i18n>keyboardDisabled}">
                             <ci:attributes>
                                 <core:CustomData key="inputmode" value="none"/>
                             </ci:attributes>
                         </ci:CustomInput>
 
-                        <Label id="ManInputClosingLabel" text="{i18n>ManInputNve}" visible="false"></Label>
-                        <Input id="ManInputClosingNve" submit="findEnteredClearedNve" type="Number" placeholder="{i18n>ManInputNve}" visible="false" tooltip="{i18n>keyboardEnabled}" />
+                        <!--<Label id="ManInputClosingLabel" text="{i18n>ManInputNve}" visible="false"></Label>-->
+                        <Input id="ManInputClosingNve" submit="findEnteredClearedNve" type="Number" placeholder="{i18n>ManInputNve}" tooltip="{i18n>keyboardEnabled}" />
 
                     </form:content>
                 </form:SimpleForm>
@@ -72,7 +72,7 @@
                     </contentLeft>
                     <contentRight>
                         <!--reche Buttons-->
-                        <Button id="btnOverview" type="Emphasized" text="{i18n>overview}" press="onNavigationForward">
+                        <Button id="btnOverview" type="Emphasized" text="{i18n>overview}" press="onNavToTourSelection">
                             <customData>
                                 <core:CustomData key="target" value="selectTourPage"/>
                             </customData>

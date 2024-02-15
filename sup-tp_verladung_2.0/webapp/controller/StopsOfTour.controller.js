@@ -263,6 +263,7 @@ sap.ui.define([
                     oErrorTextField.setValue("");
                     this.busyDialogClose(); 
                     this.onSendErrorsToBackendDialogClose();
+                    this.showSendingSuccessfullMessage();
                 },250); //Test zum Anzeigen des Lade-Dialogs mit 250ms
             },
 
@@ -809,6 +810,7 @@ sap.ui.define([
 
             onSendErrorsToBackendDialogClose:function(){
                 this.byId("sendConsoleLogToBackendDialog").close();
+                this.setFocusStopSortPage();
             },
 
             onCustomerInfoDialogOpen:function(){
@@ -910,6 +912,14 @@ sap.ui.define([
                     onClose:function(){
                         this.setFocusStopSortPage();
                     }.bind(this)
+                });
+            },
+
+            showSendingSuccessfullMessage:function(){
+                MessageToast.show(this._i18nModel.getText("successfullySend"), {
+                    duration: 1000,
+                    width:"15em",
+                    onClose:this.setFocusStopSortPage()
                 });
             }
         });
