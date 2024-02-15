@@ -187,9 +187,46 @@ sap.ui.define([
                 var oStop=this._sStopParameterModel.getProperty("/Stop");
 
                 this.swapInputMode(); //Eingabemodus vorheriger Seiten wird übernommen
+                this.setTitleForTextArea();
                 //this.setNveStoptitle(oStop); //Titel der Seite wird angepasst
                 this.setTitleForClosingPageTree(); //Anzeige der verbleibenden NVEs wird angepasst
                 this.setFocusClosingPage(); //Fokus in das Eingabefeld
+            },
+
+            setTitleForTextArea:function(){
+                var oTextArea=this.getView().byId("TourConclusionText");
+                var sNveText_0=this._i18nModel.getText("closingTextNvesConclusion_0");
+                var sNveText_1=this._i18nModel.getText("closingTextNvesConclusion_1");
+                var sNveText_2=this._i18nModel.getText("closingTextNvesConclusion_2");
+                var sInterNveText_0=this._i18nModel.getText("closingTextInterNvesConclusion_0");
+                var sInterNveText_1=this._i18nModel.getText("closingTextInterNvesConclusion_1");
+                var sClearNveText_2=this._i18nModel.getText("closingTextClearNvesConclusion_0");
+                var sClearNveText_3=this._i18nModel.getText("closingTextClearNvesConclusion_1");
+
+                var aClearedNves= this.getOwnerComponent().getModel("ClosingNves").getProperty("/results");
+                var aLoadedNves=this.getOwnerComponent().getModel("LoadedNves").getProperty("/results");
+                var aInterdepotNves=this.getOwnerComponent().getModel("InterdepotNVEs").getProperty("/results");
+
+                var saCustomers=[];
+
+                for(var i in aLoadedNves){
+                    var sTempCustomer=aLoadedNves[i].Customer; //Vergleichsoperator
+                    if(!saCustomers.includes(sTempCustomer)){ //Wenn vergleichsoperator nicht vorhanen Eintrag erstellen
+                        saCustomers.push(sTempCustomer);
+                    }
+                }
+
+                oTextArea.setText(sNveText_0 
+                    +aClearedNves.length+" "
+                    +sNveText_1+" "
+                    +saCustomers.length+" " 
+                    +sNveText_2+" "
+                    +sInterNveText_0+" "
+                    +aInterdepotNves.length+" "
+                    +sInterNveText_1+" "
+                    +sClearNveText_2+" "
+                    +aClearedNves.length+" "
+                    +sClearNveText_3);
             },
 
             setTitleForClosingPageTree:function(){
