@@ -21,7 +21,11 @@
                 <Label id="alreadyLoadedDialogCustomerLabel" text="{i18n>CustomerInformation}"></Label>
                 <Input id="alreadyLoadedDialogCustomerInput" value="{alreadyLoadedModel>/info/Customer}" editable="false"></Input>
                 <Label id="alreadyLoadedDialogErrorLabel" text="{i18n>ChooseErrorReason}"></Label>
-                <Select id="DialogAlreadyLoadedSelect"></Select>
+                <Select id="DialogAlreadyLoadedSelect" items="{
+                    path:'SelectModel>/selectOptions'
+                }">
+                    <core:Item key="{SelectModel>ErrorReason}" text="{SelectModel>Description}" />
+                </Select>
                 </form:content>
             </form:SimpleForm>
         </content>

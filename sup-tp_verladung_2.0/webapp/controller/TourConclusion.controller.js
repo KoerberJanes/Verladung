@@ -193,7 +193,7 @@ sap.ui.define([
                 this.setFocusClosingPage(); //Fokus in das Eingabefeld
             },
 
-            setTitleForTextArea:function(){
+            setTitleForTextArea:function(){ //Ist zwar lang aber besser als es i.wo aufzuteilen
                 var oTextArea=this.getView().byId("TourConclusionText");
                 var sNveText_0=this._i18nModel.getText("closingTextNvesConclusion_0");
                 var sNveText_1=this._i18nModel.getText("closingTextNvesConclusion_1");

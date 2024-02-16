@@ -314,7 +314,8 @@ sap.ui.define([
                 },250);
             },
 
-            FuClearingSet:function(oNve, sErrorReason){
+            FuClearingSet:function(oNve, sErrorReason, bAlreadeyLoadedDialogIsOpen, bClearingDialogIsOpen){
+                //Beide 'isOpen' Parameter werden der vollständigkeit halber mitgegeben --> doppelte sicherheit
                 this.busyDialogOpen();
                 /*
                 var oModel = this.getView().getModel("TP_VERLADUNG_SRV");
@@ -355,7 +356,13 @@ sap.ui.define([
                //!Für Demozwecke werden Methoden hier für den Success-Fall aufgerufen, der Error-Fall wurde vernachlässigt
                setTimeout(() => { 
                     this.busyDialogClose(); 
-                    this.onClearingDialogClose();
+                    //Prüfen welcher Dialog offen war
+                    if(bAlreadeyLoadedDialogIsOpen==true && bClearingDialogIsOpen==false){
+                        this.onAlreadyLoadedDialogClose();
+                    }
+                    if(bAlreadeyLoadedDialogIsOpen==false && bClearingDialogIsOpen==true){
+                        this.onClearingDialogClose();
+                    }
 
                     this.saveClearedNve(oNve);
                     this.spliceNveOutOfNveModel(oNve);
@@ -393,6 +400,53 @@ sap.ui.define([
                     }
                 });
                 */
+            },
+
+            getAlreadyClearedSelectOptions:function(){
+                this.busyDialogOpen();
+                var sPathPos="/GetClearReasonSet";
+                var oFilter1=new Filter("IvIdEumDev", FilterOperator.EQ, this._IvIdEumDev);
+                var oFilter2=new Filter("IvPodMode", FilterOperator.EQ, "true");
+                var aFilters=[oFilter1, oFilter2];
+                /*
+                this.getView().getModel("TP_VERLADUNG_SRV").read(sPathPos, {
+                    filters: aFilters,
+
+                    success:function(oData){
+                        this.busyDialogClose();
+                        var aRecievedErrorReasons=oData.getProperty("/results");
+
+                        if(aRecievedErrorReasons.length===0){
+                            //Fehler
+                        } else{
+                            this.handleRecievedErrorReasons(aRecievedErrorReasons);
+                        }
+                    }.bind(this),
+
+                    error:function(oError){
+                        this.busyDialogClose();
+                        var sErrorMsg="";
+                        try{
+                            sErrorMsg=JSON.parse(oError.responseText).error.message.value;
+                        }catch{
+                            sErrorMsg=this.getResourceBundle().getText("msgBusinessException");
+                        }  
+                    }.bind(this)
+                })*/
+
+                //!Testfall
+                var booleanTest=false;
+                var aRecievedErrorReasons=[
+                    {Description: "Defekt", ErrorReason:"000", Flgload:"true"},
+                    {Description: "Falsche Ware", ErrorReason:"001", Flgload:"true"},
+                    {Description: "Teilweise Defekt (VL)", ErrorReason:"002", Flgload:"true"}
+                ];
+                if(booleanTest){
+                    console.log("TestFailed");
+                } else{
+                    this.handleAlreadyLoadedErrorReasons(aRecievedErrorReasons);
+                }
+                this.onAlreadyLoadedDialogOpen();
             },
 
             getClearSelectOptions:function(){
@@ -446,6 +500,31 @@ sap.ui.define([
             //Methoden für die Backend-Daten
             ///////////////////////////////////////
 
+            handleAlreadyLoadedErrorReasons:function(aRecievedErrorReasons){
+                var oSelectModel=this.getOwnerComponent().getModel("SelectModel");
+                var aErrorOptions=[];
+
+                var oItemTemplate = new Item({ //nicht sicher ob ich das wirklich brauche
+                    Description: "{text}",
+                    ErrorReason: "{ErrorReason}"
+                });
+
+                for(var i in aRecievedErrorReasons){ //Für jede Option wird ein Element erstellt
+                    var oItem= {
+                        Description: aRecievedErrorReasons[i].Description,
+                        ErrorReason: aRecievedErrorReasons[i].ErrorReason
+                    };
+                    
+                    if(aRecievedErrorReasons[i].Flgload){ //Wenn laden --> hinzufügen zum Array an Optionen
+                        aErrorOptions.push(oItem);
+                    }
+                }
+
+                oSelectModel.setProperty("/selectOptions", []);
+                oSelectModel.setProperty("/selectOptions", aErrorOptions);
+                this.busyDialogClose();
+            },
+
             handleRecievedErrorReasons:function(aRecievedErrorReasons){
                 var oSelectModel=this.getOwnerComponent().getModel("SelectModel");
                 var aErrorOptions=[];
@@ -474,6 +553,30 @@ sap.ui.define([
             ///////////////////////////////////////
             //Methoden für das Model
             ///////////////////////////////////////
+
+            onNveWasLoaded:function(){
+                var oLoadedNve=this.getOwnerComponent().getModel("alreadyLoadedModel").getProperty("/info");
+                var sErrorReason=this.getView().byId("DialogAlreadyLoadedSelect").getSelectedItem().getText();
+                this.setClearingReasonForNve(oLoadedNve, sErrorReason);
+            },
+
+            onNveWasCleared:function(){ //NVE befand sich in Klärung und wird jetzt verladen
+                var oClearedNve=this.getOwnerComponent().getModel("alreadyClearedModel").getProperty("/info")
+                this.onSwapFromClearedToLoaded();
+                this.FuLoadingSet(oClearedNve);
+            },
+
+            setClearingReasonForNve:function(oSelectedNve, sErrorReason){
+                var bAlreadeyLoadedDialogIsOpen=this.getView().byId("alreadyLoadedDialog").isOpen();
+                var bClearingDialogIsOpen=false;
+                if(oSelectedNve.ClearingReason===undefined){ //Wenn das Attribut nicht existiert --> erstellen
+                    oSelectedNve.ClearingReason="";
+                }
+                
+                oSelectedNve.ClearingReason=sErrorReason; //Attribut mit Wert füllen
+                //this.onSwapFromLoadedToCleared();
+                this.FuClearingSet(oSelectedNve, sErrorReason, bAlreadeyLoadedDialogIsOpen, bClearingDialogIsOpen);
+            },
 
             shortenInput:function(sInput){ //Wert der Inputfelder kürzen, damit auch mit kurzen Werten gesucht werden kann
                 var sShortenedInput;
@@ -525,16 +628,16 @@ sap.ui.define([
 
             onSwapFromClearedToLoaded:function(){ //Wechseln des Status einer NVE von geklärt zu verladen
                 var oClearedNve=this.getOwnerComponent().getModel("alreadyClearedModel").getProperty("/info"); //Holen der NVE aus dem Model
-                var aClearedNvesOfTour=this.getOwnerComponent().getModel("").getProperty("/");
-                var aLoadedNvesOfTour=this.getOwnerComponent().getModel("").getProperty("/");
+                var aClearedNvesOfTour=this.getOwnerComponent().getModel("ClearedNves").getProperty("/results");
+                var aLoadedNvesOfTour=this.getOwnerComponent().getModel("LoadedNves").getProperty("/results");
                 aClearedNvesOfTour.splice(aClearedNvesOfTour.indexOf(oClearedNve), 1); //Entfernen der NVE aus den geklärten NVEs
                 aLoadedNvesOfTour.push(oClearedNve); //Speichern der NVE in den verladenen NVEs
             },
 
             onSwapFromLoadedToCleared:function(){ //Wechseln des Status einer NVE von geklärt zu verladen
-                var oClearedNve=this.getOwnerComponent().getModel("alreadyClearedModel").getProperty("/info"); //Holen der NVE aus dem Model
-                var aClearedNvesOfTour=this.getOwnerComponent().getModel("").getProperty("/");
-                var aLoadedNvesOfTour=this.getOwnerComponent().getModel("").getProperty("/");
+                var oClearedNve=this.getOwnerComponent().getModel("alreadyLoadedModel").getProperty("/info"); //Holen der NVE aus dem Model
+                var aClearedNvesOfTour=this.getOwnerComponent().getModel("ClearedNves").getProperty("/results");
+                var aLoadedNvesOfTour=this.getOwnerComponent().getModel("LoadedNves").getProperty("/results");
                 aLoadedNvesOfTour.splice(aClearedNvesOfTour.indexOf(oClearedNve), 1); //Entfernen der NVE aus den verladenen NVEs
                 aClearedNvesOfTour.push(oClearedNve); //Speichern der NVE in den geklärten NVEs
             },
@@ -670,13 +773,21 @@ sap.ui.define([
             getNveFromGlobalArray:function(sInput, sShortInput){ //Jede Nve die jemals in dieser Tour verarbeitet wurde, wird durchsucht
                 var oFoundNve;
                 var sStop=this.getView().byId("NveHandlingPageTitle").getText();
+                var aAllNvesOfTour=this.getOwnerComponent().getModel("AllNvesOfTour").getProperty("/results");
 
+                for(var i in aAllNvesOfTour){
+                    if(aAllNvesOfTour[i].Exidv===sInput || 
+                        aAllNvesOfTour[i].Exidv.substring(aAllNvesOfTour[i].Exidv.length-5)===sShortInput){
+                            oFoundNve=aAllNvesOfTour[i];
+                    }
+                }
+                /*
                 for(var i in this._aAllNvesOfTour){
                     if(this._aAllNvesOfTour[i].Exidv===sInput || this._aAllNvesOfTour[i].Exidv.substring(this._aAllNvesOfTour[i].Exidv.length-5)===sShortInput){
                         oFoundNve=this._aAllNvesOfTour[i];
                     }
                 }
-
+                */
                 if(oFoundNve){ //Wenn Nve bearbeitet wurde
                     this.CheckIfAlreadyLoaded(oFoundNve); //Siehe nach ob sie Verladen ist
                 } else{
@@ -747,9 +858,13 @@ sap.ui.define([
             },
 
             setAlreadyLoadedDialogModel:function(oFoundNve){ //Für den BereitsVerladen Dialog wird das Model zum Anzeigen gesetzt und geöffnet
-                //this.getView().getModel("alreadyLoadedModel").setProperty("/info", oFoundNve);
                 this.getOwnerComponent().getModel("alreadyLoadedModel").setProperty("/info", oFoundNve);
                 this.getAlreadyClearedSelectOptions();
+            },
+
+            setAlreadyClearedDialogModel:function(oFoundNve){
+                this.getOwnerComponent().getModel("alreadyClearedModel").setProperty("/results", oFoundNve);
+                this.onAlreadyClearedDialogOpen();
             },
 
             resetNveInputFields:function(){ //Leeren der Inputfelder für die NVEs + Focus setzen
@@ -801,18 +916,19 @@ sap.ui.define([
                 var oSelectedItem=this.getView().byId("TreeOfNves").getSelectedItem();
                 if(oSelectedItem!==null){ //Navigation zur anderen Seite
                     this.setNveForClearingDialog(oSelectedItem);
-                    //this.getClearSelectOptions();
                 } else{ //Dialog mit Fehler, dass Tour ausgewählt sein muss
                     this.noItemSelectedClearingError();
                 }
             },
 
             getNveAboutToClear:function(){
+                var bClearingDialogIsOpen=false;
+                var bAlreadeyLoadedDialogIsOpen=this.getView().byId("alreadyLoadedDialog").isOpen();
                 var oClearingDialogModel=this.getOwnerComponent().getModel("clearingDialogModel");
                 var oNveAboutToBeCleared=oClearingDialogModel.getProperty("/info"); //NVE die derzeit angezeigt wird
                 var sErrorReasonKey=this.getView().byId("DialogClearingSelect").getSelectedKey();
                 //KLär-Methonde aufrufen!
-                this.FuClearingSet(oNveAboutToBeCleared, sErrorReasonKey);
+                this.FuClearingSet(oNveAboutToBeCleared, sErrorReasonKey, bAlreadeyLoadedDialogIsOpen, bClearingDialogIsOpen);
             },
 
             setNveForClearingDialog:function(oSelectedItem){
@@ -829,7 +945,6 @@ sap.ui.define([
 
             searchUeberNves:function(sInput, sShortInput){ //In den Ü-NVEs wird gesucht ob eine NVE existiert, deren Exidv mit dem Input übereinstimmt
                 var oFoundNve;
-                //var aTreeNves=this.getView().getModel("NVEs").getProperty("/results");
                 var aTreeNves=this.getOwnerComponent().getModel("NVEs").getProperty("/results");
                 for(var i in aTreeNves){
                     if(aTreeNves[i].Exidv===sInput || aTreeNves[i].Exidv.substring(aTreeNves[i].Exidv.length-5)===sShortInput){
@@ -854,7 +969,6 @@ sap.ui.define([
 
             searchUnterNves:function(sInput, sShortInput){
                 var oFoundNve;
-                //var aNves=this.getView().getModel("NVEs").getProperty("/results");
                 var aNves=this.getOwnerComponent().getModel("NVEs").getProperty("/results");
                 var aUnterNves=[];
                 
@@ -891,9 +1005,10 @@ sap.ui.define([
             },
 
             CheckIfAlreadyCleared:function(oFoundNve){ //Prüfen ob NVE in Klärung ist
+                var aClearedNvesOfTour=this.getOwnerComponent().getModel("ClearedNves").getProperty("/results");
                 const bAlreadyCleared= (element) => element.sExidv===oFoundNve.sExidv;
 
-                if(this._aClearedNvesOfTour.some(bAlreadyCleared)){
+                if(aClearedNvesOfTour.some(bAlreadyCleared)){
                     this.setAlreadyClearedDialogModel(oFoundNve);
                 } else{
                     this.FuLoadingSet(oFoundNve); //! Prüfung notwendig, ob Fall eintreten kann weil in der Methode "getNveFromGlobalArray" der Ausstieg passieren wrde
@@ -912,7 +1027,6 @@ sap.ui.define([
             },
 
             checkIfNextStopIsNecessary:function(){ //Prüfen ob NVE-Tree leer ist und somit ein neuer Stopp aufgerufen werden soll
-                //var oModel=this.getView().getModel("NVEs");
                 var oModel=this.getOwnerComponent().getModel("NVEs");
                 var aNves=oModel.getProperty("/results");
 
@@ -1001,13 +1115,26 @@ sap.ui.define([
             //Dialoge
             ///////////////////////////////////////
 
-            onOpenNavigationBackDialog: function() {
+            onAlreadyClearedDialogOpen:function(){
                 // create dialog lazily
-                this.pDialog ??= this.loadFragment({
+                this.oALreadyClearedDialog ??= this.loadFragment({
                     name: "suptpverladung2.0.view.fragments.NavigationBack"
                 });
             
-                this.pDialog.then((oDialog) => oDialog.open());
+                this.oALreadyClearedDialog.then((oDialog) => oDialog.open());
+            },
+
+            onAlreadyLoadedDialogClose:function(){
+                this.byId("alreadyLoadedDialog").close();
+            },
+
+            onOpenNavigationBackDialog: function() {
+                // create dialog lazily
+                this.oNavBackDialog ??= this.loadFragment({
+                    name: "suptpverladung2.0.view.fragments.NavigationBack"
+                });
+            
+                this.oNavBackDialog.then((oDialog) => oDialog.open());
             },
 
             onCloseNavigationBackDialog:function(){
@@ -1029,11 +1156,11 @@ sap.ui.define([
 
             onOpenClearingReasonDialog: function() {
                 // create dialog lazily
-                this.pDialog ??= this.loadFragment({
+                this.oClearingReasonDialog ??= this.loadFragment({
                     name: "suptpverladung2.0.view.fragments.Clearing"
                 });
             
-                this.pDialog.then((oDialog) => oDialog.open());
+                this.oClearingReasonDialog.then((oDialog) => oDialog.open());
             },
 
             onClearingDialogClose:function(){
@@ -1041,11 +1168,11 @@ sap.ui.define([
             },
 
             onAlreadyLoadedDialogOpen:function(){ //Dialog wird nach dem erhalten der Kl#ärgründe geöffnet
-                this.pDialog ??= this.loadFragment({
+                this.oAlreadyLoadedDialog ??= this.loadFragment({
                     name: "suptpverladung2.0.view.fragments.AlreadyLoaded"
                 });
             
-                this.pDialog.then((oDialog) => oDialog.open());
+                this.oAlreadyLoadedDialog.then((oDialog) => oDialog.open());
             },
 
             busyDialogOpen:function(){
@@ -1119,7 +1246,7 @@ sap.ui.define([
                 MessageBox.error(this._i18nModel.getText("nveDoesNotBelongToStop_1") +" "+sInput+" "+ this._i18nModel.getText("nveDoesNotBelongToStop_2") +" "+sStop, {
                     onClose:function(){
                         this.resetNveInputFields();
-                        this.resetInputFields("ManInputClosingNve", "ScanInputClosingNve");
+                        this.resetInputFields("ManInputNve", "ScanInputNve");
                     }.bind(this)
                 });
             },
