@@ -306,6 +306,14 @@ sap.ui.define([
                 //!Für Demozwecke werden Methoden hier für den Success-Fall aufgerufen, der Error-Fall wurde vernachlässigt
                 setTimeout(() => { 
                     this.busyDialogClose(); 
+                    try {
+                        var bAlreadeyClearedDialogIsOpen=this.getView().byId("alreadyClearedDialog").isOpen();
+                        if(bAlreadeyClearedDialogIsOpen){
+                            this.onAlreadyClearedDialogClose();
+                        }
+                    } catch (error) {
+                        
+                    }
 
                     this.saveLoadedNve(oNve);
                     this.spliceNveOutOfNveModel(oNve);
@@ -562,7 +570,7 @@ sap.ui.define([
 
             onNveWasCleared:function(){ //NVE befand sich in Klärung und wird jetzt verladen
                 var oClearedNve=this.getOwnerComponent().getModel("alreadyClearedModel").getProperty("/info")
-                this.onSwapFromClearedToLoaded();
+                //this.onSwapFromClearedToLoaded();
                 this.FuLoadingSet(oClearedNve);
             },
 
@@ -863,7 +871,7 @@ sap.ui.define([
             },
 
             setAlreadyClearedDialogModel:function(oFoundNve){
-                this.getOwnerComponent().getModel("alreadyClearedModel").setProperty("/results", oFoundNve);
+                this.getOwnerComponent().getModel("alreadyClearedModel").setProperty("/info", oFoundNve);
                 this.onAlreadyClearedDialogOpen();
             },
 
@@ -995,7 +1003,7 @@ sap.ui.define([
 
             CheckIfAlreadyLoaded:function(oFoundNve){ //Prüfen ob NVE in den bereits verladen wurde 
                 var aLoadedNvesOfTour=this.getOwnerComponent().getModel("LoadedNves").getProperty("/results");
-                const bAlreadyLoaded= (element) => element.sExidv===oFoundNve.sExidv;
+                const bAlreadyLoaded= (element) => element.Exidv===oFoundNve.Exidv;   //! Prüfen ob der Parameter sExidv oder Exidv heißt
 
                 if(aLoadedNvesOfTour.some(bAlreadyLoaded)){
                     this.setAlreadyLoadedDialogModel(oFoundNve);
@@ -1006,7 +1014,7 @@ sap.ui.define([
 
             CheckIfAlreadyCleared:function(oFoundNve){ //Prüfen ob NVE in Klärung ist
                 var aClearedNvesOfTour=this.getOwnerComponent().getModel("ClearedNves").getProperty("/results");
-                const bAlreadyCleared= (element) => element.sExidv===oFoundNve.sExidv;
+                const bAlreadyCleared= (element) => element.Exidv===oFoundNve.Exidv;  //! Prüfen ob der Parameter sExidv oder Exidv heißt
 
                 if(aClearedNvesOfTour.some(bAlreadyCleared)){
                     this.setAlreadyClearedDialogModel(oFoundNve);
@@ -1117,11 +1125,23 @@ sap.ui.define([
 
             onAlreadyClearedDialogOpen:function(){
                 // create dialog lazily
-                this.oALreadyClearedDialog ??= this.loadFragment({
-                    name: "suptpverladung2.0.view.fragments.NavigationBack"
+                this.oAlreadyClearedDialog ??= this.loadFragment({
+                    name: "suptpverladung2.0.view.fragments.AlreadyCleared"
                 });
             
-                this.oALreadyClearedDialog.then((oDialog) => oDialog.open());
+                this.oAlreadyClearedDialog.then((oDialog) => oDialog.open());
+            },
+
+            onAlreadyClearedDialogClose:function(){
+                this.byId("alreadyClearedDialog").close();
+            },
+
+            onAlreadyLoadedDialogOpen:function(){ //Dialog wird nach dem erhalten der Kl#ärgründe geöffnet
+                this.oAlreadyLoadedDialog ??= this.loadFragment({
+                    name: "suptpverladung2.0.view.fragments.AlreadyLoaded"
+                });
+            
+                this.oAlreadyLoadedDialog.then((oDialog) => oDialog.open());
             },
 
             onAlreadyLoadedDialogClose:function(){
@@ -1165,14 +1185,6 @@ sap.ui.define([
 
             onClearingDialogClose:function(){
                 this.byId("klaergrundDialog").close();
-            },
-
-            onAlreadyLoadedDialogOpen:function(){ //Dialog wird nach dem erhalten der Kl#ärgründe geöffnet
-                this.oAlreadyLoadedDialog ??= this.loadFragment({
-                    name: "suptpverladung2.0.view.fragments.AlreadyLoaded"
-                });
-            
-                this.oAlreadyLoadedDialog.then((oDialog) => oDialog.open());
             },
 
             busyDialogOpen:function(){
