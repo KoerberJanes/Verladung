@@ -1,4 +1,4 @@
-<mvc:View controllerName="suptpverladung2.0.controller.Tourselection"
+<mvc:View controllerName="suptpverladung2.0.controller.TourSelection"
     xmlns:vbm="sap.ui.vbm" 
     xmlns:mvc="sap.ui.core.mvc" 
     xmlns="sap.m"
@@ -21,7 +21,7 @@
                         <Title id="selectTourPageTitle" text="{i18n>selectTourPageTitle}"/>
                     </contentMiddle>
                     <contentRight>
-                        <Button id="ErrorToBackendbtn_0" icon="sap-icon://upload-to-cloud" tooltip="ErrorLog ans Backend schicken" type="Emphasized" press="onSendErrorsToBackendDialogOpen" visible="true"/>
+                        <Button id="ErrorToBackendbtn_0" icon="sap-icon://upload-to-cloud" tooltip="ErrorLog ans Backend schicken" type="Emphasized" press="onSendErrorsToBackendDialogOpen"/>
                     </contentRight>
                 </Bar>
             </customHeader>

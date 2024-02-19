@@ -71,10 +71,6 @@ sap.ui.define([
             onInit: function () {
 
                 this._oTour=null;
-                this._bStopSequenceChangeable=true;
-                this._bManuelInput=false;
-                this._IvIdEumDev="";
-                this._IvIdTr="";
                 this._navigationHandler=navigationHandler;
                 this._sortNveHandler=sortNveHandler;
 
@@ -115,31 +111,27 @@ sap.ui.define([
 
             setGlobalParameters:function(oParameters){
                 this._oTour=this.getView().getModel("TourParameterModel").getProperty("/tour");
-                this._bStopSequenceChangeable=oParameters.sStopSequenceChangeable;
-
-                this._bManuelInput=(/true/).test(oParameters.bManuelInput); //wird von String zu Boolean abgeändert
-                this._IvIdEumDev=oParameters.IvIdEumDev;
-                this._IvIdTr=oParameters.IvIdTr;
-                //this._navigationHandler.setGlobalValuables(this._bStopSequenceChangeable, this._bManuelInput, this._IvIdEumDev, this._IvIdTr, this._oRouter);
                 this.swapInputMode();
                 this.getTourStops(this._oTour);
                 this.setTourTitle(this._oTour);
             },
 
             ChangeFromManToScan:function(){ //Vorbereitung zum Wechseln des Eingabemodus
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
 
-                if(this._bManuelInput){ //Ist der Eingabemodus von Hand?
-                    this._bManuelInput=false
+                if(oUserSettingsModel.bManuelInput){ //Ist der Eingabemodus von Hand?
+                    oUserSettingsModel.bManuelInput=false
                 } else{
-                    this._bManuelInput=true;
+                    oUserSettingsModel.bManuelInput=true;
                 }
 
                 this.swapInputMode();
             },
 
             swapInputMode:function(){ //Austauschen der Inputfelder
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 
-                if(this._bManuelInput){
+                if(oUserSettingsModel.bManuelInput){
                     this.getView().byId("ScanInputStops").setVisible(false);
                     this.getView().byId("ManInputStops").setVisible(true);
                 } else{
@@ -166,8 +158,9 @@ sap.ui.define([
 
             getTourStops:function(oModelStop){ //Erhalten der Stopps einer Tour aus dem Backend
                 this.busyDialogOpen();
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 var IdTr=oModelStop.IdTr;
-                //var sPathPos = "/GetStopsByTourSet(IvIdEumDev='" + this._IvIdEumDev + "',IvIdTr='" + IdTr + "')"; 
+                //var sPathPos = "/GetStopsByTourSet(IvIdEumDev='" + oUserSettingsModel.IvIdEumDev + "',IvIdTr='" + IdTr + "')"; 
                 
                 /*
                 BackendAufruf auskommentiert da keine Anbindung in privatem VsCode
@@ -211,13 +204,14 @@ sap.ui.define([
 
             handleRecievedStops:function(aRecievedStops, oData){ //Verarbeiten der erhaltenen Stopps
                 var oStopModel=this.getOwnerComponent().getModel("Stops");
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                  
                 if(oData.EvChangeable===""){//"" --> ist in ABAP false --> es dürfen fertig verladene Stops nicht angezeigt werden
-                    this._bStopSequenceChangeable=false;
+                    oUserSettingsModel.bStopSequenceChangeable=false;
                     aRecievedStops=this.filterFinishedStops(aRecievedStops);
                     oStopModel.setProperty("/results", aRecievedStops);
                 } else{
-                    this._bStopSequenceChangeable=true;
+                    oUserSettingsModel.bStopSequenceChangeable=true;
                     oStopModel.setProperty("/results", aRecievedStops);
                     this.stopDescriptionRefresh();
                 }
@@ -231,9 +225,10 @@ sap.ui.define([
 
             sendLog:function(oErrorTextField){ //Senden des FehlerLogs
                 this.busyDialogOpen();
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 var oModel = this.getView().getModel("TP_VERLADUNG_SRV");
                 var oCreateData = {
-                    "IdEumDev": this._IvIdEumDev,
+                    "IdEumDev": oUserSettingsModel.IvIdEumDev,
                     "ErrorDesc": oErrorTextField.getValue(), 
                     "ErrorLogList": this.getOwnerComponent().getModel("ErrorLog").getProperty("/errors")
                 }
@@ -270,10 +265,11 @@ sap.ui.define([
             sendNewStopOrderToBackend:function(){ //Versenden der neuen Stoppreihenfolge an das Backend
                 this.busyDialogOpen();
                 var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 /*
                 var oCreateData = {
-                    "IvIdEumDev": this._IvIdEumDev, // IdEumDev
-                    "IvIdTr": this._IvIdTr,
+                    "IvIdEumDev": oUserSettingsModel.IvIdEumDev, // IdEumDev
+                    "IvIdTr": oUserSettingsModel.IvIdTr,
                     "UpdateStopSequenceToStopList": {
                         "results": aStops
                     }
@@ -407,8 +403,9 @@ sap.ui.define([
 
             onScanCustomer:function(oEvent){ //Scannen von Kunden wird abgerufen
                 var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 
-                if(this._bStopSequenceChangeable=== true){ //Prüfen ob Reihenfolge geändert werden darf
+                if(oUserSettingsModel.bStopSequenceChangeable=== true){ //Prüfen ob Reihenfolge geändert werden darf
                     this.checkIfStopSelected(aStops);
                 } else{
                     this.ChangeStopError(); //Fehler weil nicht geändert werden darf
@@ -554,7 +551,8 @@ sap.ui.define([
             callNavigationHandler:function(oStop){
                 this.busyDialogOpen();
                 var oResponseModel=this.getOwnerComponent().getModel("Response");
-                this._navigationHandler.getNvesOfStop(oStop, this._IvIdEumDev, this._IvIdTr, oResponseModel);
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
+                this._navigationHandler.getNvesOfStop(oStop, oUserSettingsModel.IvIdEumDev, oUserSettingsModel.IvIdTr, oResponseModel);
                 this.getKindOfStop();
             },
 
@@ -701,7 +699,8 @@ sap.ui.define([
             ///////////////////////////////////////
 
             checkIfStoppPositionsAreChangeable:function(oEvent){ //Prüfen ob Reihenfolge Änderbar
-                if(this._bStopSequenceChangeable===false){
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
+                if(oUserSettingsModel.bStopSequenceChangeable===false){
                     this.ChangeStopError(); //Fehlermeldung
                 } else{
                     this.checkIfStoppIsSelected(oEvent);
@@ -769,12 +768,7 @@ sap.ui.define([
             },
 
             onNavToNveHandling: function() { //schließen vom Busy Dialog notwendig weil erst entschieden werden muss, auf welche Seite Navigiert wird
-                this._oRouter.navTo("RouteNveHandling",{
-                    sStopSequenceChangeable:this._bStopSequenceChangeable, 
-                    bManuelInput:this._bManuelInput, 
-                    IvIdEumDev:this._IvIdEumDev,
-                    IvIdTr:this._IvIdTr
-                });
+               this._oRouter.navTo("RouteNveHandling");
             },
 
             onNavToInterdepotNveHandling:function(){ //schließen vom Busy Dialog notwendig weil erst entschieden werden muss, auf welche Seite Navigiert wird

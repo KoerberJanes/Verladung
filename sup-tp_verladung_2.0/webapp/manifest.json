@@ -171,6 +171,18 @@
         "settings": {
           "sortedNves": []
         }
+      }
+      ,
+      "UserSettings": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "settings": {
+            "IvIdEumDev":"",
+            "IvIdTr":"",
+            "bStopSequenceChangeable":false,
+            "bManuelInput":false
+          }
+        }
       },
       "ErrorLog": {
         "type": "sap.ui.model.json.JSONModel",
@@ -206,21 +218,21 @@
         },
         {
           "name": "RouteStopsOfTour",
-          "pattern": "RouteStopsOfTour/{sStopSequenceChangeable},{bManuelInput},{IvIdEumDev},{IvIdTr}",
+          "pattern": "RouteStopsOfTour",
           "target": [
             "TargetStopsOfTour"
           ]
         },
         {
           "name": "RouteNveHandling",
-          "pattern": "RouteNveHandling/{sStopSequenceChangeable},{bManuelInput},{IvIdEumDev},{IvIdTr}",
+          "pattern": "RouteNveHandling",
           "target": [
             "TargetNveHandling"
           ]
         },
         {
           "name": "RouteInterdepotTour",
-          "pattern": "RouteInterdepotTour/{sStopSequenceChangeable},{bManuelInput},{IvIdEumDev},{IvIdTr}",
+          "pattern": "RouteInterdepotTour",
           "target": [
             "TargetInterdepotTour"
           ]

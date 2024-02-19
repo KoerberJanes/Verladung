@@ -24,10 +24,7 @@ sap.ui.define([
 
         return Controller.extend("suptpverladung2.0.controller.InterdepotTour", {
             onInit: function () {
-                this._IvIdEumDev="";
-                this._IvIdTr="";
                 this._sStopParameterModel="";
-                this._bStopSequenceChangeable=true;
                 this._bManuelInput=false;
                 this._navigationHandler=navigationHandler;
                 this._sortNveHandler=sortNveHandler;
@@ -46,9 +43,10 @@ sap.ui.define([
 
             callNavigationHandler:function(oStop){
                 this.busyDialogOpen();
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 var oResponseModel=this.getOwnerComponent().getModel("Response");
                 this.setStopParameterModel(oStop);
-                this._navigationHandler.getNvesOfStop(oStop, this._IvIdEumDev, this._IvIdTr, oResponseModel);
+                this._navigationHandler.getNvesOfStop(oStop, oUserSettingsModel.IvIdEumDev, oUserSettingsModel.IvIdTr, oResponseModel);
                 this.getKindOfStop();
             },
 
@@ -63,11 +61,6 @@ sap.ui.define([
 
             setGlobalParameters:function(oParameters){
                 this._sStopParameterModel=this.getOwnerComponent().getModel("StopParameterModel");
-                this._IvIdEumDev=oParameters.IvIdEumDev;
-                this._IvIdTr=oParameters.IvIdTr;
-
-                this._bManuelInput=(/true/).test(oParameters.bManuelInput); //Kommt als String an, obwohl hier ein Boolean erwartet wird
-                this._bStopSequenceChangeable=(/true/).test(oParameters.sStopSequenceChangeable);
                 this.setUserInterfaceMethodes();
             },
 
@@ -82,9 +75,10 @@ sap.ui.define([
 
             sendLog:function(oErrorTextField){ //TODO: Prüfen ob Array/Objekte oder Text gesendet werden soll
                 //this.busyDialogOpen();
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 var oModel = this.getView().getModel("TP_VERLADUNG_SRV");
                 var oCreateData = {
-                    "IdEumDev": this._IvIdEumDev,
+                    "IdEumDev": oUserSettingsModel.IvIdEumDev,
                     "ErrorDesc": oErrorTextField.getValue(), 
                     "ErrorLogList": this.getOwnerComponent().getModel("ErrorLog").getProperty("/errors")
                 }
@@ -120,7 +114,8 @@ sap.ui.define([
 
             getNvesOfStop:function(oStop){ //Stopp wird übergeben und die NVEs im Backend erfragt
                 //this.busyDialogOpen();
-                var sPathPos = "/GetFusLoadSet(IvIdEumDev='" + this._IvIdEumDev + "',IvIdTr='" + this._IvIdTr + "',IvNoStop='" + oStop.NoStop + "')"; // Id
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
+                var sPathPos = "/GetFusLoadSet(IvIdEumDev='" + oUserSettingsModel.IvIdEumDev + "',IvIdTr='" + oUserSettingsModel.IvIdTr + "',IvNoStop='" + oStop.NoStop + "')"; // Id
                 
                 //!BackendAufruf auskommentiert da keine Anbindung in privatem VsCode
                 /*
@@ -188,11 +183,12 @@ sap.ui.define([
             },
 
             sendNewStopOrderToBackend:function(){ //Versenden der neuen Stoppreihenfolge an das Backend
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
                 /*
                 var oCreateData = {
-                    "IvIdEumDev": this._IvIdEumDev, // IdEumDev
-                    "IvIdTr": this._IvIdTr,
+                    "IvIdEumDev": oUserSettingsModel.IvIdEumDev, // IdEumDev
+                    "IvIdTr": oUserSettingsModel.IvIdTr,
                     "UpdateStopSequenceToStopList": {
                         "results": aStops
                     }
@@ -335,7 +331,8 @@ sap.ui.define([
             },
 
             checkIfStopSequenceNeedsToBeUpdated:function(){
-                if(this._bStopSequenceChangeable){
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
+                if(oUserSettingsModel.bStopSequenceChangeable){
                     this.UpdateStopSequence();
                 }else{
                     //NOP
@@ -454,31 +451,15 @@ sap.ui.define([
             ///////////////////////////////////////
 
             onNavToTourConclusionPage:function(){
-                this._oRouter.navTo("RouteTourConclusion",{ 
-                    sStopSequenceChangeable:this._bStopSequenceChangeable, 
-                    bManuelInput:this._bManuelInput,
-                    IvIdEumDev:this._IvIdEumDev,
-                    IvIdTr:this._IvIdTr
-                });
+                this._oRouter.navTo("RouteTourConclusion");
             },
 
             onNavToNveHandling: function() { //schließen vom Busy Dialog notwendig weil erst entschieden werden muss, auf welche Seite Navigiert wird
-                this._oRouter.navTo("RouteNveHandling",{
-                    sStopSequenceChangeable:this._bStopSequenceChangeable, 
-                    bManuelInput:this._bManuelInput, 
-                    IvIdEumDev:this._IvIdEumDev,
-                    IvIdTr:this._IvIdTr
-                });
+                this._oRouter.navTo("RouteNveHandling");
             },
 
             onNavigationBack:function(){
-                this._oRouter.navTo("RouteStopsOfTour",{
-                    SelectedTourModel:"TourParameterModel", 
-                    sStopSequenceChangeable:this._bStopSequenceChangeable, 
-                    bManuelInput:this._bManuelInput,
-                    IvIdEumDev:this._IvIdEumDev,
-                    IvIdTr:this._IvIdTr
-                });
+                this._oRouter.navTo("RouteStopsOfTour");
             },
 
             ///////////////////////////////////////

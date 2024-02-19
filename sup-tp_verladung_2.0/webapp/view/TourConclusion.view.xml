@@ -24,7 +24,7 @@
                     </contentMiddle>
 
                     <contentRight>
-                        <Button id="ErrorToBackendbtn_5" icon="sap-icon://upload-to-cloud" tooltip="ErrorLog ans Backend schicken" type="Emphasized" press="onSendErrorsToBackendDialogOpen" visible="true"/>
+                        <Button id="ErrorToBackendbtn_5" icon="sap-icon://upload-to-cloud" tooltip="ErrorLog ans Backend schicken" type="Emphasized" press="onSendErrorsToBackendDialogOpen"/>
                         <Button id="TourConclusionKeyboardButton" icon="sap-icon://keyboard-and-mouse" type="Emphasized" press="ChangeFromManToScan">
                         </Button>
                     </contentRight>
@@ -58,7 +58,6 @@
                             </ci:attributes>
                         </ci:CustomInput>
 
-                        <!--<Label id="ManInputClosingLabel" text="{i18n>ManInputNve}" visible="false"></Label>-->
                         <Input id="ManInputClosingNve" submit="findEnteredClearedNve" type="Number" placeholder="{i18n>ManInputNve}" tooltip="{i18n>keyboardEnabled}" />
 
                     </form:content>

@@ -24,11 +24,7 @@ sap.ui.define([
 
         return Controller.extend("suptpverladung2.0.controller.NveHandling", {
             onInit: function () {
-                this._IvIdEumDev="";
-                this._IvIdTr="";
                 this._sStopParameterModel="";
-                this._bStopSequenceChangeable=true;
-                this._bManuelInput=false;
                 this._navigationHandler=navigationHandler;
                 this._sortNveHandler=sortNveHandler;
 
@@ -62,9 +58,10 @@ sap.ui.define([
 
             callNavigationHandler:function(oStop){ //
                 this.busyDialogOpen();
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 var oResponseModel=this.getOwnerComponent().getModel("Response");
                 this.setStopParameterModel(oStop);
-                this._navigationHandler.getNvesOfStop(oStop, this._IvIdEumDev, this._IvIdTr, oResponseModel); //Util methode um oData und infos über Stopart zu erhalten
+                this._navigationHandler.getNvesOfStop(oStop, oUserSettingsModel.IvIdEumDev, oUserSettingsModel.IvIdTr, oResponseModel); //Util methode um oData und infos über Stopart zu erhalten
                 this.getKindOfStop();
             },
 
@@ -114,11 +111,6 @@ sap.ui.define([
 
             setGlobalParameters:function(oParameters){  
                 this._sStopParameterModel=this.getOwnerComponent().getModel("StopParameterModel");
-                this._IvIdEumDev=oParameters.IvIdEumDev;
-                this._IvIdTr=oParameters.IvIdTr;
-                
-                this._bManuelInput=(/true/).test(oParameters.bManuelInput); //Kommt als String an, obwohl hier ein Boolean erwartet wird
-                this._bStopSequenceChangeable=(/true/).test(oParameters.sStopSequenceChangeable);
                 this.setUserInterfaceMethodes();
             },
 
@@ -132,19 +124,21 @@ sap.ui.define([
             },
 
             ChangeFromManToScan:function(){
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
 
-                if(this._bManuelInput){ //Ist der Eingabemodus von Hand?
-                    this._bManuelInput=false
+                if(oUserSettingsModel.bManuelInput){ //Ist der Eingabemodus von Hand?
+                    oUserSettingsModel.bManuelInput=false
                 } else{
-                    this._bManuelInput=true;
+                    oUserSettingsModel.bManuelInput=true;
                 }
 
                 this.swapInputMode();
             },
 
             swapInputMode:function(){ //Labels wurden aus Platz-Gründen entfernt --> Der Wechsel zwischen custom Inputfeldern und den Normalen wird vollzogen
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 
-                if(this._bManuelInput){
+                if(oUserSettingsModel.bManuelInput){
                     this.getView().byId("ScanInputNve").setVisible(false);
                     this.getView().byId("ManInputNve").setVisible(true);
                 } else{
@@ -167,9 +161,10 @@ sap.ui.define([
 
             sendLog:function(oErrorTextField){ //TODO: Prüfen ob Array/Objekte oder Text gesendet werden soll
                 //this.busyDialogOpen();
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 var oModel = this.getView().getModel("TP_VERLADUNG_SRV");
                 var oCreateData = {
-                    "IdEumDev": this._IvIdEumDev,
+                    "IdEumDev": oUserSettingsModel.IvIdEumDev,
                     "ErrorDesc": oErrorTextField.getValue(), 
                     "ErrorLogList": this.getOwnerComponent().getModel("ErrorLog").getProperty("/errors")
                 }
@@ -205,6 +200,7 @@ sap.ui.define([
 
             FuPackagingSet:function(oFoundNve){
                 const sVhilm = "000000009997100"; // also zb Kolli setzen wir fest 
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 var oModel = this.getView().getModel("TP_EINPACKENAUSPACKEN_SRV");
     
                 if(this._newPackaging){
@@ -213,7 +209,7 @@ sap.ui.define([
     
                 // erstellen der JSON-Struktur für die Übergabe ans Backend-System
                 var oCreateData = {
-                    "IdEumDev": this._IvIdEumDev,
+                    "IdEumDev": oUserSettingsModel.IvIdEumDev,
                     "Vhilm": sVhilm,
                     "ExidvUpper": sExUpper,
                     "ExidvLower": oFoundNve.sExidv,
@@ -254,14 +250,15 @@ sap.ui.define([
             FuLoadingSet:function(oNve){ //NVE zum Verladen ans Backend schicken
                 //this.onSortStops(this.getOwnerComponent().getModel("Stops").getProperty("/results")); //Entfernen abgearbeiteter Stops --> Prüfen ob nicht schon erledigt
                 this.busyDialogOpen();
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 //TODO_5
                 /*
                 var oModel = this.getView().getModel("TP_VERLADUNG_SRV");
                 var oCreateData = this.getView().getModel("StopsExpanded").oData;
                 this.byId("UeNveScanKeyboard_4").getValue();
                 var oCreateData = {
-                    "IvIdEumDev": this._IvIdEumDev, // IdEumDev
-                    "IvIdTr": this._IvIdTr,
+                    "IvIdEumDev": oUserSettingsModel.IvIdEumDev, // IdEumDev
+                    "IvIdTr": oUserSettingsModel.IvIdTr,
                     "IvPickupNumber": 0, // Integer
                     "IvExidv": oNve.Exidv,
                     "IvIdLoc": Idloc
@@ -272,7 +269,7 @@ sap.ui.define([
                     success: function (oData) { //Speichern der verladenen NVE
                         this.busyDialogClose();
 
-                        this._bStopSequenceChangeable=false;
+                        oUserSettingsModel.bStopSequenceChangeable=false; //Kann wahrscheinlich geändert werden
 
                         if(sIdDisplayedPage==="nveHandlingPage"){
                             this.saveLoadedNve(oNve);
@@ -325,13 +322,14 @@ sap.ui.define([
             FuClearingSet:function(oNve, sErrorReason, bAlreadeyLoadedDialogIsOpen, bClearingDialogIsOpen){
                 //Beide 'isOpen' Parameter werden der vollständigkeit halber mitgegeben --> doppelte sicherheit
                 this.busyDialogOpen();
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 /*
                 var oModel = this.getView().getModel("TP_VERLADUNG_SRV");
                 var oCreateData = this.getView().getModel("StopsExpanded").oData;
                 
                 var oCreateData = {
-                    "IdEumDev": this._IvIdEumDev, // IdEumDev
-                    "IdTr": this._IvIdTr,
+                    "IdEumDev": oUserSettingsModel.IvIdEumDev, // IdEumDev
+                    "IdTr": oUserSettingsModel.IvIdTr,
                     "IvPickupNumber": 0, // Integer
                     "Exidv": oNve.Exidv,
                     "ErrorReason": sErrorReason, //Muss ich schauen, ob hier String oder Objekt verlangt wird (Ausgangssituation --> String)
@@ -380,10 +378,11 @@ sap.ui.define([
 
             sendNewStopOrderToBackend:function(){ //Versenden der neuen Stoppreihenfolge an das Backend
                 var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 /*
                 var oCreateData = {
-                    "IvIdEumDev": this._IvIdEumDev, // IdEumDev
-                    "IvIdTr": this._IvIdTr,
+                    "IvIdEumDev": oUserSettingsModel.IvIdEumDev, // IdEumDev
+                    "IvIdTr": oUserSettingsModel.IvIdTr,
                     "UpdateStopSequenceToStopList": {
                         "results": aStops
                     }
@@ -412,8 +411,9 @@ sap.ui.define([
 
             getAlreadyClearedSelectOptions:function(){
                 this.busyDialogOpen();
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 var sPathPos="/GetClearReasonSet";
-                var oFilter1=new Filter("IvIdEumDev", FilterOperator.EQ, this._IvIdEumDev);
+                var oFilter1=new Filter("IvIdEumDev", FilterOperator.EQ, oUserSettingsModel.IvIdEumDev);
                 var oFilter2=new Filter("IvPodMode", FilterOperator.EQ, "true");
                 var aFilters=[oFilter1, oFilter2];
                 /*
@@ -459,8 +459,9 @@ sap.ui.define([
 
             getClearSelectOptions:function(){
                 this.busyDialogOpen();
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 var sPathPos="/GetClearReasonSet";
-                var oFilter1=new Filter("IvIdEumDev", FilterOperator.EQ, this._IvIdEumDev);
+                var oFilter1=new Filter("IvIdEumDev", FilterOperator.EQ, oUserSettingsModel.IvIdEumDev);
                 var oFilter2=new Filter("IvPodMode", FilterOperator.EQ, "true");
                 var aFilters=[oFilter1, oFilter2];
                 /*
@@ -569,8 +570,7 @@ sap.ui.define([
             },
 
             onNveWasCleared:function(){ //NVE befand sich in Klärung und wird jetzt verladen
-                var oClearedNve=this.getOwnerComponent().getModel("alreadyClearedModel").getProperty("/info")
-                //this.onSwapFromClearedToLoaded();
+                var oClearedNve=this.getOwnerComponent().getModel("alreadyClearedModel").getProperty("/info");
                 this.FuLoadingSet(oClearedNve);
             },
 
@@ -736,16 +736,6 @@ sap.ui.define([
 
             onNavigateToOtherCustomer:function(){
                 this._oRouter.navTo("RouteToCustomer");
-
-                /*
-                this._oRouter.navTo("RouteInterdepotTour",{
-                    StopParameterModel:this._sStopParameterModel,
-                    sStopSequenceChangeable:this._bStopSequenceChangeable, 
-                    bManuelInput:this._bManuelInput,
-                    IvIdEumDev:this._IvIdEumDev,
-                    IvIdTr:this._IvIdTr
-                });
-                */
             },
 
             ///////////////////////////////////////
@@ -1056,7 +1046,8 @@ sap.ui.define([
             },
 
             checkIfStopSequenceNeedsToBeUpdated:function(){
-                if(this._bStopSequenceChangeable){
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
+                if(oUserSettingsModel.bStopSequenceChangeable){
                     this.UpdateStopSequence();
                 }else{
                     //NOP
@@ -1087,30 +1078,15 @@ sap.ui.define([
             ///////////////////////////////////////
 
             onNavToTourConclusionPage:function(){
-                this._oRouter.navTo("RouteTourConclusion",{ 
-                    sStopSequenceChangeable:this._bStopSequenceChangeable, 
-                    bManuelInput:this._bManuelInput,
-                    IvIdEumDev:this._IvIdEumDev,
-                    IvIdTr:this._IvIdTr
-                });
+                this._oRouter.navTo("RouteTourConclusion");
             },
 
             onNavigationBack:function(){
-                this._oRouter.navTo("RouteStopsOfTour",{
-                    sStopSequenceChangeable:this._bStopSequenceChangeable, 
-                    bManuelInput:this._bManuelInput,
-                    IvIdEumDev:this._IvIdEumDev,
-                    IvIdTr:this._IvIdTr
-                });
+                this._oRouter.navTo("RouteStopsOfTour");
             },
 
             onNavToInterdepotPage:function(){
-                this._oRouter.navTo("RouteInterdepotTour",{
-                    sStopSequenceChangeable:this._bStopSequenceChangeable, 
-                    bManuelInput:this._bManuelInput,
-                    IvIdEumDev:this._IvIdEumDev,
-                    IvIdTr:this._IvIdTr
-                });
+                this._oRouter.navTo("RouteInterdepotTour");
             },
 
             ///////////////////////////////////////

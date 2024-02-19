@@ -19,17 +19,17 @@ sap.ui.define([
     function (Controller, JSONModel, HashChanger, Filter, Sorter, MessageToast, MessageBox, GeoMap, Spot, Spots, VoAbstract, FilterOperator, Item) {
         "use strict";
 
-        return Controller.extend("suptpverladung2.0.controller.Tourselection", {
+        return Controller.extend("suptpverladung2.0.controller.TourSelection", {
             onInit: function () {
                 //!Models sind alle aufrufbar aus der manifest mit:
                 //!"this.getOwnerComponent().getModel("ModelName");"
                 //!Inhalte sind alle aufrufbar aus der manifest mit:
                 //!"this.getOwnerComponent().getModel("ModelName").getProperty("/propertyName");"
                 //Globale Variablen
-                this._IvIdEumDev="";  //Für getUrlParameters notwendig
-                this._IvIdTr="";
-                this._bStopSequenceChangeable=false; //ABAP --> "X" entspricht true und "" enstpricht false
-                this._bManuelInput=false; //Globaler eingabemodus
+                //this._IvIdEumDev="";  //Für getUrlParameters notwendig
+                //this._IvIdTr="";
+                //this._bStopSequenceChangeable=false; //ABAP --> "X" entspricht true und "" enstpricht false
+                //this._bManuelInput=false; //Globaler eingabemodus
             },
 
             onAfterRendering:function(){
@@ -117,16 +117,19 @@ sap.ui.define([
 
             getUrlParameters:function(){  //gibt die ID des Faherers als String wieder, die gespeichert werden muss um Touren bearbeiten zu können
                 var sIdEumDev;
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 try {// aus der URL
                     var startupParams = this.getOwnerComponent().getComponentData().startupParameters;
                     sIdEumDev = startupParams.IdEumDev[0]; // ändern 
                 } catch (oError) {// aus der Run Configuration
                     sIdEumDev = jQuery.sap.getUriParameters().get("IdEumDev"); // ändern
                 }
+
                 //!Nächste Zeile muss entfernt werden
                 sIdEumDev="42069_TestNumber"
                 //!Die folgende Zeile ist die Original Zeile, diese muss Bestehen
-                this._IvIdEumDev = sIdEumDev; // globale Variable mit this._
+                //this._IvIdEumDev = sIdEumDev; // globale Variable mit this._
+                oUserSettingsModel.IvIdEumDev=sIdEumDev;
             },
 
             /////////////////////////////
@@ -136,12 +139,13 @@ sap.ui.define([
             getToursForDriver:function(){ // Touren des angemeldeten Fahrers werden aus dem Backend geholt
                 this.busyDialogOpen();
 
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 var today = new Date();
                 var mm = today.getMonth() + 1; //January is 0!
                 var sToday = today.getDate() + "." + mm + "." + today.getFullYear();
-
+                
                 var sPathPos = "/GetToursByDriverFlatSet";
-                var oFilter1 = new Filter("IvIdEumDev", FilterOperator.EQ, this._IvIdEumDev); 
+                var oFilter1 = new Filter("IvIdEumDev", FilterOperator.EQ, oUserSettingsModel.IvIdEumDev); 
                 var oFilter2 = new Filter("IvProcess", FilterOperator.EQ, "P"); 
                 var oFilter3 = new Filter("IvDate", FilterOperator.EQ, sToday);
                 var aFilters = [oFilter1, oFilter2, oFilter3];
@@ -193,9 +197,11 @@ sap.ui.define([
 
             sendLog:function(oErrorTextField){ //TODO: Prüfen ob so gewollt
                 this.busyDialogOpen();
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
+
                 var oModel = this.getView().getModel("TP_VERLADUNG_SRV");
                 var oCreateData = {
-                    "IdEumDev": this._IvIdEumDev,
+                    "IdEumDev": oUserSettingsModel.IvIdEumDev,
                     "ErrorDesc": oErrorTextField.getValue(), 
                     "ErrorLogList": this.getOwnerComponent().getModel("ErrorLog").getProperty("/errors")
                 }
@@ -293,8 +299,10 @@ sap.ui.define([
             },
 
             setModelStop:function(oModelStop){ //Setzen der Tour in das Model, das für die Stopp-Übersicht benötigt wird
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 this.getOwnerComponent().getModel("TourParameterModel").setProperty("/tour", oModelStop);
-                this._IvIdTr=oModelStop.IdTr;
+                oUserSettingsModel.IvIdTr=oModelStop.IdTr;
+                //this._IvIdTr=oModelStop.IdTr;
                 this.onNavToStopView(); //Navigieren, nachdem der Vorgang abgeschlossen ist
             },
 
@@ -318,19 +326,20 @@ sap.ui.define([
             
             onNavToStopView: function() { //Navigation zur Stopp-Übersicht
                 const oRouter = this.getOwnerComponent().getRouter();
-                var sStopSequenceChangeable=this._bStopSequenceChangeable.toString();
-                var _IvIdTr=this.getOwnerComponent().getModel("TourParameterModel").getProperty("/tour").IdTr;
                 //Navigation zur Stop-Übersicht
                 //Parameter sind:
                 //1. ob die Stoppreihenfolge änderbar ist
                 //2. Welcher Inputmode gerade aktiv ist
                 //3. Die Identifikation der Person
                 //4. Die Identifikation der Tour 
+                /*
                 oRouter.navTo("RouteStopsOfTour",{
                     sStopSequenceChangeable:sStopSequenceChangeable, 
                     bManuelInput:this._bManuelInput,
                     IvIdEumDev:this._IvIdEumDev,
                     IvIdTr:this._IvIdTr}); 
+                    */
+                oRouter.navTo("RouteStopsOfTour");
             },
 
             //////////////////////////////////////

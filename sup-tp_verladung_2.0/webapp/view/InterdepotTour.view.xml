@@ -28,7 +28,7 @@
                     </contentMiddle>
 
                     <contentRight>
-                        <Button id="ErrorToBackendbtn_4" icon="sap-icon://upload-to-cloud" tooltip="ErrorLog ans Backend schicken" type="Emphasized" press="onSendErrorsToBackendDialogOpen" visible="true"/>
+                        <Button id="ErrorToBackendbtn_4" icon="sap-icon://upload-to-cloud" tooltip="ErrorLog ans Backend schicken" type="Emphasized" press="onSendErrorsToBackendDialogOpen"/>
                     </contentRight>
                 </Bar>
             </customHeader>

@@ -25,7 +25,7 @@
                     </contentMiddle>
 
                     <contentRight>
-                        <Button id="ErrorToBackendbtn_2" icon="sap-icon://upload-to-cloud" tooltip="ErrorLog ans Backend schicken" type="Emphasized" press="onSendErrorsToBackendDialogOpen" visible="true"/>
+                        <Button id="ErrorToBackendbtn_2" icon="sap-icon://upload-to-cloud" tooltip="ErrorLog ans Backend schicken" type="Emphasized" press="onSendErrorsToBackendDialogOpen"/>
                         <Button id="nveHandlingKeyboardButton" icon="sap-icon://keyboard-and-mouse" type="Emphasized" press="ChangeFromManToScan">
                         </Button>
                     </contentRight>
