@@ -789,13 +789,7 @@ sap.ui.define([
                             oFoundNve=aAllNvesOfTour[i];
                     }
                 }
-                /*
-                for(var i in this._aAllNvesOfTour){
-                    if(this._aAllNvesOfTour[i].Exidv===sInput || this._aAllNvesOfTour[i].Exidv.substring(this._aAllNvesOfTour[i].Exidv.length-5)===sShortInput){
-                        oFoundNve=this._aAllNvesOfTour[i];
-                    }
-                }
-                */
+                
                 if(oFoundNve){ //Wenn Nve bearbeitet wurde
                     this.CheckIfAlreadyLoaded(oFoundNve); //Siehe nach ob sie Verladen ist
                 } else{
@@ -910,7 +904,7 @@ sap.ui.define([
             //check-/finder-Methoden
             ///////////////////////////////////////
 
-            onFindEnteredNve:function(oEvent){ //Inputfelder auslesen und prüfen ob die mindestlänge erreicht wurde
+            onGetEnteredNve:function(oEvent){ //Inputfelder auslesen und prüfen ob die mindestlänge erreicht wurde
                 var sInput= this.getInputValue("ManInputNve", "ScanInputNve");
                 
                 if(sInput.length>4){
@@ -995,7 +989,7 @@ sap.ui.define([
                 }
 
                 if(oFoundNve){ //Wenn gefunden
-                    this.unableToLoadCuzUnterNve(sShortInput); //Meldung Unter-Nve kann nicht verladen werden
+                    this.unableToLoadCuzUnterNveError(sShortInput); //Meldung Unter-Nve kann nicht verladen werden
                 }else{
                     this.getNveFromGlobalArray(sInput, sShortInput); //Nachsehen ob sie zu dieser Tour gehört
                 }
@@ -1220,6 +1214,16 @@ sap.ui.define([
             //Fehlermeldungen
             ///////////////////////////////////////
 
+            unableToLoadCuzUnterNveError:function(sShortInput){
+                this.playBeepError();
+                MessageBox.error(this._i18nModel.getText("loadingOfUnveNotAllowed_1")+" '"+sShortInput+ "' "+this._i18nModel.getText("loadingOfUnveNotAllowed_2"), {
+                    onClose:function(){
+                        this.resetNveInputFields();
+                        //this.resetInputFields("ManInputNve", "ScanInputNve");
+                    }.bind(this)
+                });
+            },
+
             MessageSuccesfullyLoaded:function(){ //Erfolgreich verladen
                 MessageToast.show(this._i18nModel.getText("successfullyLoaded"));
             },
@@ -1229,7 +1233,7 @@ sap.ui.define([
                 MessageBox.error(this._i18nModel.getText("inputTooShort_1")+" '"+sInput+ "' "+this._i18nModel.getText("inputTooShort_2"), {
                     onClose:function(){
                         this.resetNveInputFields();
-                        this.resetInputFields("ManInputNve", "ScanInputNve");
+                        //this.resetInputFields("ManInputNve", "ScanInputNve");
                     }.bind(this)
                 });
             },
@@ -1257,7 +1261,7 @@ sap.ui.define([
                 this.playBeepError();
                 MessageBox.error(this._i18nModel.getText("nveDoesNotBelongToStop_1") +" "+sInput+" "+ this._i18nModel.getText("nveDoesNotBelongToStop_2") +" "+sStop, {
                     onClose:function(){
-                        this.resetNveInputFields();
+                        //this.resetNveInputFields();
                         this.resetInputFields("ManInputNve", "ScanInputNve");
                     }.bind(this)
                 });

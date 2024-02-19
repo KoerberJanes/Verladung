@@ -49,12 +49,12 @@
 
                 <form:SimpleForm id="nveHandlingForm" editable="true" layout="ResponsiveGridLayout" title="" labelSpanXL="2" labelSpanL="2" labelSpanM="2">
                     <form:content>
-                        <ci:CustomInput id="ScanInputNve" value="" submit="onFindEnteredNve" type="Number" placeholder="{i18n>ScanInputNve}" tooltip="{i18n>keyboardDisabled}">
+                        <ci:CustomInput id="ScanInputNve" value="" submit="onGetEnteredNve" type="Number" placeholder="{i18n>ScanInputNve}" tooltip="{i18n>keyboardDisabled}">
                             <ci:attributes>
                                 <core:CustomData key="inputmode" value="none"/>
                             </ci:attributes>
                         </ci:CustomInput>
-                        <Input id="ManInputNve" submit="onFindEnteredNve" type="Number" placeholder="{i18n>ManInputNve}" visible="false" tooltip="{i18n>keyboardEnabled}"/>
+                        <Input id="ManInputNve" submit="onGetEnteredNve" type="Number" placeholder="{i18n>ManInputNve}" visible="false" tooltip="{i18n>keyboardEnabled}"/>
                     </form:content>
                 </form:SimpleForm>
             </content>
