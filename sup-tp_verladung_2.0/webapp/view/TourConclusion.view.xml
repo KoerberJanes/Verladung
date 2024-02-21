@@ -38,7 +38,7 @@
                     </form:content>
                 </form:SimpleForm>
 
-                        <ScrollContainer id="TourConclusionScrollContainer" height="80%" vertical="true">
+                        <ScrollContainer id="TourConclusionScrollContainer" height="60%" vertical="true">
                             <Tree id="TourConclusionTree" items="{ClosingNves>/results}" selectionChange="onSelectionChange" sticky="HeaderToolbar" toggleOpenState="">
                                  <headerToolbar>
                                     <OverflowToolbar id="ClosingTreeToolbar">
@@ -52,13 +52,13 @@
                 <form:SimpleForm id="tourConclusionForm_1" editable="true" layout="ResponsiveGridLayout" title="" labelSpanXL="2" labelSpanL="2" labelSpanM="2">
                     <form:content>
                         <!--<Label id="ScanInputClosingLabel" text="{i18n>ScanInputNve}"></Label>-->
-                        <ci:CustomInput id="ScanInputClosingNve" value="" submit="findEnteredClearedNve" type="Number" placeholder="{i18n>ScanInputNve}" tooltip="{i18n>keyboardDisabled}">
+                        <ci:CustomInput id="ScanInputClosingNve" value="" submit="onGetEnteredNve" type="Number" placeholder="{i18n>ScanInputNve}" tooltip="{i18n>keyboardDisabled}">
                             <ci:attributes>
                                 <core:CustomData key="inputmode" value="none"/>
                             </ci:attributes>
                         </ci:CustomInput>
 
-                        <Input id="ManInputClosingNve" submit="findEnteredClearedNve" type="Number" placeholder="{i18n>ManInputNve}" tooltip="{i18n>keyboardEnabled}" />
+                        <Input id="ManInputClosingNve" submit="onGetEnteredNve" type="Number" placeholder="{i18n>ManInputNve}" tooltip="{i18n>keyboardEnabled}" />
 
                     </form:content>
                 </form:SimpleForm>

@@ -373,7 +373,7 @@ sap.ui.define([
                     this.saveClearedNve(oNve);
                     this.spliceNveOutOfNveModel(oNve);
                     this.CheckIfModelIsEmpty();
-            },250);
+                },250);
             },
 
             sendNewStopOrderToBackend:function(){ //Versenden der neuen Stoppreihenfolge an das Backend
@@ -915,7 +915,13 @@ sap.ui.define([
 
             getNveAboutToClear:function(){
                 var bClearingDialogIsOpen=false;
-                var bAlreadeyLoadedDialogIsOpen=this.getView().byId("alreadyLoadedDialog").isOpen();
+                var bAlreadeyLoadedDialogIsOpen=false;
+                try {
+                    bAlreadeyLoadedDialogIsOpen=this.getView().byId("alreadyLoadedDialog").isOpen();
+                } catch (error) { //! GGf. Abgleichen mit den Dialogen, die offen sein können
+                    this.onClearingDialogClose();
+                    //NOP --> da mit false Initialisiert
+                }
                 var oClearingDialogModel=this.getOwnerComponent().getModel("clearingDialogModel");
                 var oNveAboutToBeCleared=oClearingDialogModel.getProperty("/info"); //NVE die derzeit angezeigt wird
                 var sErrorReasonKey=this.getView().byId("DialogClearingSelect").getSelectedKey();

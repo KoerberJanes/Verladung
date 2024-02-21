@@ -601,12 +601,12 @@ sap.ui.define([
             setCustomerSpotForGeoMap:function(){
                 var oSpotModel=this.getOwnerComponent().getModel("SpotModel");
                 var oDisplayedStop=this.getOwnerComponent().getModel("StopInfoModel").getProperty("/info");
-
                 var oSpot={
                     pos: oDisplayedStop.CoordX+";"+oDisplayedStop.CoordY+";0",
                     tooltip: oDisplayedStop.Name1,
                     type: "Success",
-                    text: "oDisplayedStop.Name1"
+                    text: "oDisplayedStop.Name1",
+                    StopNumber: oDisplayedStop.Description.substring(1,4)
                 };
 
                 oSpotModel.setProperty("/spot", []); //Entfernen ggf. vorher angezeigter Spots
@@ -628,7 +628,8 @@ sap.ui.define([
             },
 
             onClickSpot: function (oEvent) {
-                oEvent.getSource().openDetailWindow("My Detail Window", "0", "0" );
+                var oSpot=this.getOwnerComponent().getModel("SpotModel").getProperty("/spot")[0];
+                oEvent.getSource().openDetailWindow("Stopp Nummer "+oSpot.StopNumber, +" "+oSpot.StopNumber, "0", "0" );
             },
 
             setTourTitle:function(oTour){ //Setzen des Titels für die Stopp-Auswahl Seite
@@ -777,10 +778,10 @@ sap.ui.define([
             },
 
             onCustomerInfoGeoMapDialogOpen:function(){
-                 this.oGeoMapDialog ??= this.loadFragment({
+                this.oGeoMapDialog ??= this.loadFragment({
                     name: "suptpverladung2.0.view.fragments.GeoMap"
                 });
-            
+                
                 this.oGeoMapDialog.then((oDialog) => oDialog.open());
             },
 
