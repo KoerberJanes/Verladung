@@ -598,6 +598,24 @@ sap.ui.define([
             //set-Methoden
             ///////////////////////////////////////
 
+            setCustomerSpotForGeoMap:function(){
+                var oSpotModel=this.getOwnerComponent().getModel("SpotModel");
+                var oDisplayedStop=this.getOwnerComponent().getModel("StopInfoModel").getProperty("/info");
+
+                var oSpot={
+                    pos: oDisplayedStop.CoordX+";"+oDisplayedStop.CoordY+";0",
+                    tooltip: oDisplayedStop.Name1,
+                    type: "Success",
+                    text: "oDisplayedStop.Name1"
+                };
+
+                oSpotModel.setProperty("/spot", []); //Entfernen ggf. vorher angezeigter Spots
+                oSpotModel.setProperty("/spot", [oSpot]);
+
+                this.onCustomerInfoGeoMapDialogOpen();
+
+            },
+
             setFocusStopSortPage:function(){ //Focus für die Inputfelder der Stoppreihenfolge mit Verzögerung, da es manchmal probleme gab
                 setTimeout(() => { this.getView().byId("ManInputStops").focus() || this.getView().byId("ScanInputStops").focus() },25);
             },
@@ -607,31 +625,6 @@ sap.ui.define([
                 //this.getView().getModel("StopInfoModel").setProperty("/info", oSelectedObject);
                 this.getOwnerComponent().getModel("StopInfoModel").setProperty("/info", oSelectedObject);
                 this.onCustomerInfoDialogOpen();
-            },
-
-            setAppearanceForGeoMap:function(){ //Setzen der GeoMap Location des Kunden beim Öffnen
-                //var oDisplayedStop=this.getView().getModel("StopInfoModel").getProperty("/info");
-                var oDisplayedStop=this.getOwnerComponent().getModel("StopInfoModel").getProperty("/info");
-
-                var oGeoMap=sap.ui.getCore().byId("GeoMap");
-                var aSpots=oGeoMap.getVos()[0];
-
-                const { 
-                    CoordX, 
-                    CoordY }=oDisplayedStop;
-                const customerPosition = `${CoordX};${CoordY};0.0`;
-                
-                //Marker des Stops generieren
-                const customerSpot = new Spot({
-                    position: customerPosition,
-                    type: "Success",
-                    tooltip: oDisplayedStop.Name1
-                });
-
-                aSpots.insertItem(customerSpot, 0); //setzen des Spots in das Array zum anzeigen
-                oGeoMap.setCenterPosition(customerPosition);
-                oGeoMap.zoomToGeoPosition(oDisplayedStop.CoordX, oDisplayedStop.CoordY, 14);
-                this.onCustomerInfoGeoMapDialogOpen();
             },
 
             onClickSpot: function (oEvent) {

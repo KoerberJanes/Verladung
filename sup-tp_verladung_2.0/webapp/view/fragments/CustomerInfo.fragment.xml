@@ -31,7 +31,7 @@
                     <Input id="CustomerInfoDialogInputCity_2" value="{StopInfoModel>/info/City_2}" editable="false"></Input> <!--Teilort-->
                     <Label id="customerInfoDialogLabelAdditionalInfo" text="{i18n>AdditionalInformation}"></Label>
                     <TextArea id="CustomerInfoDialogTextAreaDelvInfo" value="{StopInfoModel>/info/DelvInfo}" editable="false" growing="true" growingMaxLines="5" width="100%"></TextArea> <!--Zusatzinformationen-->
-                    <Button id="CustomerInfoDialogButtonForGeoMap" text="{i18n>openMap}" press="onCustomerInfoGeoMapDialogOpen"></Button><!--setAppearanceForGeoMap-->
+                    <Button id="CustomerInfoDialogButtonForGeoMap" text="{i18n>openMap}" press="setCustomerSpotForGeoMap"></Button><!--setAppearanceForGeoMap-->
                 </form:content>
             </form:SimpleForm>
         </content>
