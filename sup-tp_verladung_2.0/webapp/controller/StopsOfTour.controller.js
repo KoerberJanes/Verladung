@@ -634,44 +634,8 @@ sap.ui.define([
                 this.onCustomerInfoGeoMapDialogOpen();
             },
 
-            setGeoMapProvider:function(){ //Provider Informationen für die GeoMap
-                //!Notiz: Eventuell muss der Dialog erst offen sein, bevor der MapProvider gesetzt werden kann
-                var oGeoMap = sap.ui.getCore().byId("GeoMap");
-                var oMapConfig = {
-                    "MapProvider": [{
-                        "name": "OSM",
-                        "type": "",
-                        "description": "",
-                        "tileX": "256",
-                        "tileY": "256",
-                        "maxLOD": "20",
-                        "copyright": "Tiles Courtesy of OpenStreetMap",
-                        "Source": [{
-                            "id": "s1",
-                            "url": "https://a.tile.openstreetmap.org/{LOD}/{X}/{Y}.png"
-                        }]
-                    }],
-                    "MapLayerStacks": [{
-                        "name": "DEFAULT",
-                        "MapLayer": [{
-                            "name": "OSMLayter",
-                            "refMapProvider": "OSM",
-                            "opacity": "1.0",
-                            "colBkgnd": "RGB(255,255,255)"
-                        }]
-                    }]
-                };
-                /* Inhalt des Kommentares funktioniert nicht, da die oGeoMap nicht gefunden wird
-                oGeoMap.setMapConfiguration(oMapConfig);
-                oGeoMap.setRefMapLayerStack("DEFAULT");
-                oGeoMap.setInitialZoom(14);
-                oGeoMap.setInitialPosition("-97.57;35.57;0");
-                */
-            },
-
-            setNextNveStop:function(){ //TODO: herausfinden was es damit auf sich hat
-                var oStopsModel=this.getOwnerComponent().getModel("Stops");
-                var aStops=oStopsModel.getProperty("/results");
+            onClickSpot: function (oEvent) {
+                oEvent.getSource().openDetailWindow("My Detail Window", "0", "0" );
             },
 
             setTourTitle:function(oTour){ //Setzen des Titels für die Stopp-Auswahl Seite
@@ -825,7 +789,6 @@ sap.ui.define([
                 });
             
                 this.oGeoMapDialog.then((oDialog) => oDialog.open());
-                this.setGeoMapProvider();
             },
 
             onCustomerInfoGeoMapDialogClose:function(){
