@@ -3,7 +3,7 @@
     xmlns:core="sap.ui.core"
     xmlns:vbm="sap.ui.vbm"
     displayBlock="true">
-   <Dialog id="customerInfoGeoMapDialog" initialFocus="" afterClose="">
+   <Dialog id="customerInfoGeoMapDialog" initialFocus="" afterClose="" afterOpen="onZoomToPosition">
         <customHeader>
             <!--custom Header Items-->
             <Bar id="CustomerInfoGeoMapDialogHeaderBar">

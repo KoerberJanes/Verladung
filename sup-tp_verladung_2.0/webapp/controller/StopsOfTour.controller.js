@@ -306,6 +306,14 @@ sap.ui.define([
             //Methoden für das Model
             ///////////////////////////////////////
 
+            onZoomToPosition:function(){
+                var sGeoLocationOfStop=this.getOwnerComponent().getModel("SpotModel").getProperty("/spot")[0].pos;
+                var oGeoMapFragment=this.getView().byId("customerInfoGeoMapDialog");
+                var aBananaSplit=sGeoLocationOfStop.split(';');
+
+                oGeoMapFragment.getContent()[0].zoomToGeoPosition(parseFloat(aBananaSplit[0]), parseFloat(aBananaSplit[1]), parseFloat(aBananaSplit[2]));
+            },
+
             fireChangeStopOrderEvent:function(oEvent, oSelectedItem){ //jeder Button der die Stoppsreihenfolge beeinflussen kann löst diese Methode aus
                 var sEventTriggerId=oEvent.getSource().sId.substring(oEvent.getSource().sId.lastIndexOf("-")+1); //Id des Buttons der betätigt wurde
 
@@ -602,7 +610,7 @@ sap.ui.define([
                 var oSpotModel=this.getOwnerComponent().getModel("SpotModel");
                 var oDisplayedStop=this.getOwnerComponent().getModel("StopInfoModel").getProperty("/info");
                 var oSpot={
-                    pos: oDisplayedStop.CoordX+";"+oDisplayedStop.CoordY+";0",
+                    pos: oDisplayedStop.CoordX+";"+oDisplayedStop.CoordY+";12",
                     tooltip: oDisplayedStop.Name1,
                     type: "Success",
                     text: "oDisplayedStop.Name1",
@@ -613,7 +621,6 @@ sap.ui.define([
                 oSpotModel.setProperty("/spot", [oSpot]);
 
                 this.onCustomerInfoGeoMapDialogOpen();
-
             },
 
             setFocusStopSortPage:function(){ //Focus für die Inputfelder der Stoppreihenfolge mit Verzögerung, da es manchmal probleme gab
