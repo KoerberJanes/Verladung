@@ -25,11 +25,6 @@ sap.ui.define([
                 //!"this.getOwnerComponent().getModel("ModelName");"
                 //!Inhalte sind alle aufrufbar aus der manifest mit:
                 //!"this.getOwnerComponent().getModel("ModelName").getProperty("/propertyName");"
-                //Globale Variablen
-                //this._IvIdEumDev="";  //Für getUrlParameters notwendig
-                //this._IvIdTr="";
-                //this._bStopSequenceChangeable=false; //ABAP --> "X" entspricht true und "" enstpricht false
-                //this._bManuelInput=false; //Globaler eingabemodus
             },
 
             onAfterRendering:function(){

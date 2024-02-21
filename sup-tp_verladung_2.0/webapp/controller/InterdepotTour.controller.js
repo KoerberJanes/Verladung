@@ -25,7 +25,6 @@ sap.ui.define([
         return Controller.extend("suptpverladung2.0.controller.InterdepotTour", {
             onInit: function () {
                 this._sStopParameterModel="";
-                this._bManuelInput=false;
                 this._navigationHandler=navigationHandler;
                 this._sortNveHandler=sortNveHandler;
 
@@ -352,7 +351,7 @@ sap.ui.define([
             ///////////////////////////////////////
 
             //!Hier diese Methode muss noch getestet werden
-            getNextStopInLine:function(aStops){ //Erhalten des nächsten Stops, abhängig von der derzeitigen Location
+            getNextStopInLine:function(){ //Erhalten des nächsten Stops, abhängig von der derzeitigen Location
                 var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
                 var sCurrentStopTitle=this.getView().byId("InterdepotPageTitle").getText();
                 var sCurrentStopNumber=sCurrentStopTitle.substring(0, 3);

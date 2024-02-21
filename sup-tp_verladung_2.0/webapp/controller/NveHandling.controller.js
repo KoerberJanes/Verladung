@@ -683,7 +683,7 @@ sap.ui.define([
                 }
                 oModel.refresh();
                 //UI Methoden 
-                this.resetNveInputFields(); //Eingebafeld leeren und Fokus setzen
+                this.resetNveInputFields(); //Eingabefeld leeren und Fokus setzen
                 this.setTitleForNveTree(); //Hier evtl. nicht von Nöten, macht es nur hübscher
             },
 

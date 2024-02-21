@@ -23,10 +23,6 @@ sap.ui.define([
 
         return Controller.extend("suptpverladung2.0.controller.TourConclusion", {
             onInit: function () {
-                this._IvIdEumDev="";
-                this._IvIdTr="";
-                this._bStopSequenceChangeable=true;
-                this._bManuelInput=false;
                 this._navigationHandler=navigationHandler;
                 this._sortNveHandler=sortNveHandler;
 
@@ -50,29 +46,24 @@ sap.ui.define([
 
             setGlobalParameters:function(oParameters){  
                 this._sStopParameterModel=this.getOwnerComponent().getModel("ClosingNves");
-                this._IvIdEumDev=oParameters.IvIdEumDev;
-                this._IvIdTr=oParameters.IvIdTr;
-                
-                this._bManuelInput=(/true/).test(oParameters.bManuelInput); //Kommt als String an, obwohl hier ein Boolean erwartet wird
-                this._bStopSequenceChangeable=(/true/).test(oParameters.sStopSequenceChangeable);
                 //Bevor UI angepasst wird, müssen NVEs aus dem Backend erhalten werden!
                 this.getFusClearSet();
             },
 
             ChangeFromManToScan:function(){
-
-                if(this._bManuelInput){ //Ist der Eingabemodus von Hand?
-                    this._bManuelInput=false
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
+                if(oUserSettingsModel.bManuelInput){ //Ist der Eingabemodus von Hand?
+                    oUserSettingsModel.bManuelInput=false
                 } else{
-                    this._bManuelInput=true;
+                    oUserSettingsModel.bManuelInput=true;
                 }
 
                 this.swapInputMode();
             },
 
             swapInputMode:function(){ //Labels wurden aus Platz-Gründen entfernt --> Der Wechsel zwischen custom Inputfeldern und den Normalen wird vollzogen
-                
-                if(this._bManuelInput){
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
+                if(oUserSettingsModel.bManuelInput){
                     this.getView().byId("ScanInputClosingNve").setVisible(false);
                     this.getView().byId("ManInputClosingNve").setVisible(true);
                 } else{
@@ -147,14 +138,15 @@ sap.ui.define([
             FuLoadingSet:function(oNve){ //NVE zum Verladen ans Backend schicken
                 //this.onSortStops(this.getOwnerComponent().getModel("Stops").getProperty("/results")); //Entfernen abgearbeiteter Stops --> Prüfen ob nicht schon erledigt
                 this.busyDialogOpen();
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 //TODO_5
                 /*
                 var oModel = this.getView().getModel("TP_VERLADUNG_SRV");
                 var oCreateData = this.getView().getModel("StopsExpanded").oData;
                 this.byId("UeNveScanKeyboard_4").getValue();
                 var oCreateData = {
-                    "IvIdEumDev": this._IvIdEumDev, // IdEumDev
-                    "IvIdTr": this._IvIdTr,
+                    "IvIdEumDev": oUserSettingsModel.IvIdEumDev, // IdEumDev
+                    "IvIdTr": oUserSettingsModel.IvIdTr,
                     "IvPickupNumber": 0, // Integer
                     "IvExidv": oNve.Exidv,
                     "IvIdLoc": Idloc
@@ -165,7 +157,7 @@ sap.ui.define([
                     success: function (oData) { //Speichern der verladenen NVE
                         this.busyDialogClose();
 
-                        this._bStopSequenceChangeable=false;
+                        oUserSettingsModel.bStopSequenceChangeable=false;
 
                         if(sIdDisplayedPage==="nveHandlingPage"){
                             this.saveLoadedNve(oNve);
@@ -215,8 +207,9 @@ sap.ui.define([
 
             getFusClearSet: function () {
                 this.busyDialogOpen();
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
 
-                const sPathPos = `/GetFusClearSet(IvIdEumDev='${this._IvIdEumDev}',IdTr='${this._IvIdTr}')`; // Iv zu Id
+                const sPathPos = `/GetFusClearSet(IvIdEumDev='${oUserSettingsModel.IvIdEumDev}',IdTr='${oUserSettingsModel.IvIdTr}')`; // Iv zu Id
                 
                 const sModelPath = "TP_TOURFREIGABE_SRV";
                 /*
@@ -260,9 +253,10 @@ sap.ui.define([
 
             sendLog:function(oErrorTextField){ //TODO: Prüfen ob Array/Objekte oder Text gesendet werden soll
                 //this.busyDialogOpen();
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 var oModel = this.getView().getModel("TP_VERLADUNG_SRV");
                 var oCreateData = {
-                    "IdEumDev": this._IvIdEumDev,
+                    "IdEumDev": oUserSettingsModel.IvIdEumDev,
                     "ErrorDesc": oErrorTextField.getValue(), 
                     "ErrorLogList": this.getOwnerComponent().getModel("ErrorLog").getProperty("/errors")
                 }
@@ -298,8 +292,9 @@ sap.ui.define([
 
             getAlreadyClearedSelectOptions:function(){
                 this.busyDialogOpen();
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 var sPathPos="/GetClearReasonSet";
-                var oFilter1=new Filter("IvIdEumDev", FilterOperator.EQ, this._IvIdEumDev);
+                var oFilter1=new Filter("IvIdEumDev", FilterOperator.EQ, oUserSettingsModel.IvIdEumDev);
                 var oFilter2=new Filter("IvPodMode", FilterOperator.EQ, "true");
                 var aFilters=[oFilter1, oFilter2];
                 /*
@@ -765,7 +760,6 @@ sap.ui.define([
                 MessageBox.error(this._i18nModel.getText("loadingOfUnveNotAllowed_1")+" '"+sShortInput+ "' "+this._i18nModel.getText("loadingOfUnveNotAllowed_2"), {
                     onClose:function(){
                         this.resetClosingInputFields();
-                        //this.resetInputFields("ManInputNve", "ScanInputNve");
                     }.bind(this)
                 });
             },
