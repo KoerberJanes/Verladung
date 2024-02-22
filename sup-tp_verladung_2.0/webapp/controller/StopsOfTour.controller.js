@@ -201,7 +201,6 @@ sap.ui.define([
                 var sModelName=oModelStop.Description;
                 var aSelectedStopList=this.getOwnerComponent().getModel(sModelName).getProperty("/results");
                 this.handleRecievedStops(aSelectedStopList, oTestData);
-
             },
 
             handleRecievedStops:function(aRecievedStops, oData){ //Verarbeiten der erhaltenen Stopps
@@ -215,7 +214,8 @@ sap.ui.define([
                 } else{
                     oUserSettingsModel.bStopSequenceChangeable=true;
                     oStopModel.setProperty("/results", aRecievedStops);
-                    this.stopDescriptionRefresh(); //Kann hier direkt aufgerufen werden, denn Daten werden gerade erhlten
+                    //this.stopDescriptionRefresh();
+                    this.checkIfStopOrderChangeable();
                 }
                 //Code Dopplung im if-else, weil Stoppnummer fest ist, wenn nicht mehr geändert werden darf
             },
