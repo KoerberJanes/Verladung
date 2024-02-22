@@ -44,8 +44,7 @@ sap.ui.define([
                 this.setGlobalParameters(oParameters);
             },
 
-            setGlobalParameters:function(oParameters){  
-                this._sStopParameterModel=this.getOwnerComponent().getModel("ClosingNves");
+            setGlobalParameters:function(oParameters){ 
                 //Bevor UI angepasst wird, müssen NVEs aus dem Backend erhalten werden!
                 this.getFusClearSet();
             },
@@ -224,7 +223,7 @@ sap.ui.define([
                         var aResponseNves=oData.getProperty("/results");
                         this._sortNveHandler.setAttributesForLoading(aResponseNves, this._i18nModel);
                         var aSortedResponseNves=this.getOwnerComponent().getModel("sortedNveModel").getProperty("/sortedNves");
-                        this._sStopParameterModel.setProperty("/results", aSortedResponseNves);
+                        this.getOwnerComponent().getModel("ClosingNves").setProperty("/results", aSortedResponseNves);
                     }.bind(this),
 
                     error: function (oError) {
@@ -372,8 +371,7 @@ sap.ui.define([
             ///////////////////////////////////////
 
             saveLoadedNve:function(oNve){ //Speichern einer Verladenen NVE in "_aLoadedNvesOfTour", wenn sie darin noch nicht existiert
-                //this.checkIfLastTourWasTheSame(); 
-
+                
                 var _aLoadedNvesOfTour=this.getOwnerComponent().getModel("LoadedNves").getProperty("/results");
                 if(_aLoadedNvesOfTour.indexOf(oNve)===-1){
                     _aLoadedNvesOfTour.push(oNve);
@@ -433,7 +431,7 @@ sap.ui.define([
                 var _aLoadedNvesOfTour=this.getOwnerComponent().getModel("LoadedNves").getProperty("/results");
                 var iIndex=_aLoadedNvesOfTour.indexOf(oNve);
                 if(iIndex!==-1){
-                    _aLoadedNvesOfTour.splice(iIndex);
+                    _aLoadedNvesOfTour.splice(iIndex, 1);
                 }
             },
 
@@ -441,7 +439,7 @@ sap.ui.define([
                 var _aClearedNvesOfTour=this.getOwnerComponent().getModel("ClearedNves").getProperty("/results");
                 var iIndex=_aClearedNvesOfTour.indexOf(oNve);
                 if(iIndex!==-1){
-                    _aClearedNvesOfTour.splice(iIndex);
+                    _aClearedNvesOfTour.splice(iIndex, 1);
                 }
             },
 

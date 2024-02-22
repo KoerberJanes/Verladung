@@ -685,7 +685,7 @@ sap.ui.define([
                 var _aClearedNvesOfTour=this.getOwnerComponent().getModel("ClearedNves").getProperty("/results");
                 var iIndex=_aClearedNvesOfTour.indexOf(oNve);
                 if(iIndex!==-1){
-                    _aClearedNvesOfTour.splice(iIndex);
+                    _aClearedNvesOfTour.splice(iIndex, 1);
                 }
             },
 
@@ -693,7 +693,7 @@ sap.ui.define([
                 var _aLoadedNvesOfTour=this.getOwnerComponent().getModel("LoadedNves").getProperty("/results");
                 var iIndex=_aLoadedNvesOfTour.indexOf(oNve);
                 if(iIndex!==-1){
-                    _aLoadedNvesOfTour.splice(iIndex);
+                    _aLoadedNvesOfTour.splice(iIndex, 1);
                 }
             },
 
