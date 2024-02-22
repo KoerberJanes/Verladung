@@ -314,6 +314,7 @@ sap.ui.define([
 
                     this.saveLoadedNve(oNve);
                     this.spliceNveOutOfNveModel(oNve);
+                    this.checkIfStopOrderCanBeChanged();
                     this.CheckIfModelIsEmpty();
                     //this.MessageSuccesfullyLoaded();
                 },250);
@@ -893,6 +894,17 @@ sap.ui.define([
             ///////////////////////////////////////
             //check-/finder-Methoden
             ///////////////////////////////////////
+
+            checkIfStopOrderCanBeChanged:function(){
+                var oLoadedNvesModel=this.getOwnerComponent().getModel("LoadedNves");
+                var aLoadedNves=oLoadedNvesModel.getProperty("/results");
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
+                if(aLoadedNves.length>0){
+                    oUserSettingsModel.bStopSequenceChangeable=false;
+                } else{
+                    oUserSettingsModel.bStopSequenceChangeable=true;
+                }
+            },
 
             onGetEnteredNve:function(oEvent){ //Inputfelder auslesen und prüfen ob die mindestlänge erreicht wurde
                 var sInput= this.getInputValue("ManInputNve", "ScanInputNve");

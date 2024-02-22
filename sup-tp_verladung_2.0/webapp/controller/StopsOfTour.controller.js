@@ -14,12 +14,13 @@ sap.ui.define([
     "sap/ui/core/Item",
     "suptpverladung2/0/util/scanner",
     "suptpverladung2/0/util/navigationHandler",
-    "suptpverladung2/0/util/sortNveHandler"
+    "suptpverladung2/0/util/sortNveHandler",
+    "suptpverladung2/0/util/stopSequenceHandler"
 ],
     /**
      * @param {typeof sap.ui.core.mvc.Controller} Controller
      */
-    function (Controller, JSONModel, HashChanger, Filter, Sorter, MessageToast, MessageBox, GeoMap, Spot, Spots, VoAbstract, FilterOperator, Item, scanner, navigationHandler, sortNveHandler) {
+    function (Controller, JSONModel, HashChanger, Filter, Sorter, MessageToast, MessageBox, GeoMap, Spot, Spots, VoAbstract, FilterOperator, Item, scanner, navigationHandler, sortNveHandler, stopSequenceHandler) {
         "use strict";
 
         return Controller.extend("suptpverladung2.0.controller.StopsOfTour", {
@@ -73,10 +74,11 @@ sap.ui.define([
                 this._oTour=null;
                 this._navigationHandler=navigationHandler;
                 this._sortNveHandler=sortNveHandler;
+                this._stopSequenceHandler=stopSequenceHandler;
 
                 this._oRouter = this.getOwnerComponent().getRouter();
 			    this._oRouter.getRoute("RouteStopsOfTour").attachPatternMatched(this.onObjectMatched, this);
-                this.initiateScanner();
+                //this.initiateScanner();
             },
 
             onAfterRendering:function(){
@@ -86,7 +88,7 @@ sap.ui.define([
                     this.setFocusStopSortPage(); //Fokus Methode für die jeweiligen Felder
                 }.bind(this));
             },
-
+            /*
             initiateScanner:function(){
                 scanner.registerScanner((scannedValue) => {
                     if(scannedValue.match(/[0-9]/) && scannedValue.match(/[a-zA-Z]/)){
@@ -103,7 +105,7 @@ sap.ui.define([
                     }
                 });
             },
-
+            */
             onObjectMatched:function(oEvent){
                 var oParameters=oEvent.getParameter("arguments");
                 this.setGlobalParameters(oParameters);
@@ -213,10 +215,39 @@ sap.ui.define([
                 } else{
                     oUserSettingsModel.bStopSequenceChangeable=true;
                     oStopModel.setProperty("/results", aRecievedStops);
-                    this.stopDescriptionRefresh();
+                    this.stopDescriptionRefresh(); //Kann hier direkt aufgerufen werden, denn Daten werden gerade erhlten
                 }
                 //Code Dopplung im if-else, weil Stoppnummer fest ist, wenn nicht mehr geändert werden darf
             },
+
+            checkIfStopOrderChangeable:function(){
+                var aLoadedNves=this.getOwnerComponent().getModel("LoadedNves").getProperty("/results");
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
+                var oStopOrderChangeAllowedModel=this.getOwnerComponent().getModel("oStopOrderChangeAllowedModel").getProperty("/status");
+                this._stopSequenceHandler.chekIfStopSequenceChangeable(oUserSettingsModel, oStopOrderChangeAllowedModel);
+                this._stopSequenceHandler.checkIfNvesAreLoaded(aLoadedNves, oStopOrderChangeAllowedModel);
+
+                if(oStopOrderChangeAllowedModel.bStopOrderChangeGeneralyAllowed && oStopOrderChangeAllowedModel.bStopOrderChangeAllowedDueToNoNves){
+                    this.stopDescriptionRefresh();
+                } else{
+
+                }
+            },
+
+            checkIfStopOrderChangeableForButtons:function(oEvent){
+                var aLoadedNves=this.getOwnerComponent().getModel("LoadedNves").getProperty("/results");
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
+                var oStopOrderChangeAllowedModel=this.getOwnerComponent().getModel("oStopOrderChangeAllowedModel").getProperty("/status");
+                this._stopSequenceHandler.chekIfStopSequenceChangeable(oUserSettingsModel, oStopOrderChangeAllowedModel);
+                this._stopSequenceHandler.checkIfNvesAreLoaded(aLoadedNves, oStopOrderChangeAllowedModel);
+
+                if(oStopOrderChangeAllowedModel.bStopOrderChangeGeneralyAllowed && oStopOrderChangeAllowedModel.bStopOrderChangeAllowedDueToNoNves){
+                    this.checkIfStoppIsSelected(oEvent);
+                } else{
+                    this.ChangeStopError();
+                }
+            },
+            
 
             onSendErrorsToBackend:function(){ //Vorbereiten zum Senden des Fehler-Logs
                 var oErrorTextField=this.getView().byId("sendConsoleLogDialogInput");
@@ -358,7 +389,8 @@ sap.ui.define([
                         break;
                 }
                 this.onSelectSameLocation(oStoppOfModel);
-                this.stopDescriptionRefresh();
+                //this.stopDescriptionRefresh();
+                this.checkIfStopOrderChangeable();
             },
 
             onSelectSameLocation:function(oStopOfModel){ //Nachdem ein Stopp in der Reihenfolge verschoben wurde, soll dieser erneut ausgewählt werden
@@ -406,14 +438,19 @@ sap.ui.define([
                     iStopnumber++;
                 }
                 oModel.refresh();
-                this.setFocusStopSortPage();
+                this.resetStopInputFields();
             },
 
             onScanCustomer:function(oEvent){ //Scannen von Kunden wird abgerufen
                 var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
                 var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
-                
-                if(oUserSettingsModel.bStopSequenceChangeable=== true){ //Prüfen ob Reihenfolge geändert werden darf
+                var aLoadedNves=this.getOwnerComponent().getModel("LoadedNves").getProperty("/results");
+                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
+                var oStopOrderChangeAllowedModel=this.getOwnerComponent().getModel("oStopOrderChangeAllowedModel").getProperty("/status");
+                this._stopSequenceHandler.chekIfStopSequenceChangeable(oUserSettingsModel, oStopOrderChangeAllowedModel);
+                this._stopSequenceHandler.checkIfNvesAreLoaded(aLoadedNves, oStopOrderChangeAllowedModel);
+
+                if(oStopOrderChangeAllowedModel.bStopOrderChangeGeneralyAllowed && oStopOrderChangeAllowedModel.bStopOrderChangeAllowedDueToNoNves){
                     this.checkIfStopSelected(aStops);
                 } else{
                     this.ChangeStopError(); //Fehler weil nicht geändert werden darf
@@ -440,7 +477,6 @@ sap.ui.define([
                 this.stopDescriptionRefresh();
                 this.onSelectSameLocation(oScannedStop);
                 this.resetStopInputFields();
-                this.setFocusStopSortPage();
             },
 
             onScrollToItem:function(iIndexSelectedItem, aListItems){ //Innerhalb des Scroll-Containers soll die NVE wieder mittig angezeigt werden
@@ -450,7 +486,6 @@ sap.ui.define([
                     this.getView().byId("ScrollContainerStopList").scrollToElement(aListItems[[iIndexSelectedItem-2]]);
                 }
                 this.stopDescriptionRefresh();
-                
             },
 
             filterFinishedStops: function(aRecievedStops) { //Gibt gefiltertes Array zurück
@@ -636,7 +671,7 @@ sap.ui.define([
 
             onClickSpot: function (oEvent) {
                 var oSpot=this.getOwnerComponent().getModel("SpotModel").getProperty("/spot")[0];
-                oEvent.getSource().openDetailWindow("Stopp Nummer "+oSpot.StopNumber, +" "+oSpot.StopNumber, "0", "0" );
+                oEvent.getSource().openDetailWindow("Stopp Nummer "+oSpot.StopNumber +" "+oSpot.StopNumber, "0", "0" );
             },
 
             setTourTitle:function(oTour){ //Setzen des Titels für die Stopp-Auswahl Seite
@@ -663,16 +698,7 @@ sap.ui.define([
             //check-/finder-Methoden
             ///////////////////////////////////////
 
-            checkIfStoppPositionsAreChangeable:function(oEvent){ //Prüfen ob Reihenfolge Änderbar
-                var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
-                if(oUserSettingsModel.bStopSequenceChangeable===false){
-                    this.ChangeStopError(); //Fehlermeldung
-                } else{
-                    this.checkIfStoppIsSelected(oEvent);
-                }
-            },
-
-            checkIfStoppIsSelected:function(oEvent){
+            checkIfStoppIsSelected:function(oEvent){ //Wird für die Buttons gemacht
                 var oSelectedItem=this.getView().byId("stopList").getSelectedItem();
                 if(oSelectedItem!==null){
                     this.fireChangeStopOrderEvent(oEvent, oSelectedItem);
@@ -681,7 +707,7 @@ sap.ui.define([
                 }
             },
 
-            checkIfStopSelected:function(aStops){ //Prüfen ob ein Stopp Selektiert wurde
+            checkIfStopSelected:function(aStops){ //Wird für den Scan gemacht
                 var oSelectedListStop=this.getView().byId("stopList").getSelectedItem();
                 var oSelectedStop=undefined;
 
@@ -813,10 +839,6 @@ sap.ui.define([
                 this.setFocusStopSortPage();
             },
 
-            onFocusBackAbort:function(){
-                this.setFocusStopSortPage(); //Navigation zurück abgebrochen
-            },
-
             //////////////////////////////////////
             //Fokus-/Reset-Methoden
             //////////////////////////////////////
@@ -842,7 +864,7 @@ sap.ui.define([
             StopSelectError:function(){ //Verschieben des Stopps über Buttons während kein Stopp ausgewählt ist
                 MessageBox.error(this._i18nModel.getText("selectStopToChange"), {
                     onClose:function(){
-                        this.setFocusStopSortPage();
+                        this.resetStopInputFields();
                     }.bind(this)
                 });
             },
@@ -868,7 +890,7 @@ sap.ui.define([
                 this.playBeepError();
                 MessageBox.error(this._i18nModel.getText("stopsNotChangeable"), {
                     onClose:function(){
-                        this.setFocusStopSortPage();
+                        this.resetStopInputFields();
                     }.bind(this)
                 });
             },
@@ -877,7 +899,7 @@ sap.ui.define([
                 MessageToast.show(this._i18nModel.getText("successfullySend"), {
                     duration: 1000,
                     width:"15em",
-                    onClose:this.setFocusStopSortPage()
+                    onClose:this.resetStopInputFields()
                 });
             }
         });

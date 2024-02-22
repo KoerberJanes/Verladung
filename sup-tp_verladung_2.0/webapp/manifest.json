@@ -172,6 +172,15 @@
           "sortedNves": []
         }
       },
+      "oStopOrderChangeAllowedModel": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "status": {
+            "bStopOrderChangeGeneralyAllowed": false,
+            "bStopOrderChangeAllowedDueToNoNves": false
+          }
+        }
+      },
       "SpotModel": {
         "type": "sap.ui.model.json.JSONModel",
         "settings": {
