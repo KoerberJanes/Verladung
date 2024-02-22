@@ -214,7 +214,6 @@ sap.ui.define([
                 } else{
                     oUserSettingsModel.bStopSequenceChangeable=true;
                     oStopModel.setProperty("/results", aRecievedStops);
-                    //this.stopDescriptionRefresh();
                     this.checkIfStopOrderChangeable();
                 }
                 //Code Dopplung im if-else, weil Stoppnummer fest ist, wenn nicht mehr geändert werden darf

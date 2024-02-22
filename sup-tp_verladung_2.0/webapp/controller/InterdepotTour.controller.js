@@ -24,7 +24,6 @@ sap.ui.define([
 
         return Controller.extend("suptpverladung2.0.controller.InterdepotTour", {
             onInit: function () {
-                this._sStopParameterModel="";
                 this._navigationHandler=navigationHandler;
                 this._sortNveHandler=sortNveHandler;
 
@@ -53,14 +52,45 @@ sap.ui.define([
                 this.getOwnerComponent().getModel("StopParameterModel").setProperty("/Stop", oStop);
             },
 
-            onObjectMatched:function(oEvent){
+            onObjectMatched:function(oEvent){ //kann ggf. in manchen Controllern entfernt werden
                 var oParameters=oEvent.getParameter("arguments");
                 this.setGlobalParameters(oParameters);
             },
 
-            setGlobalParameters:function(oParameters){
-                this._sStopParameterModel=this.getOwnerComponent().getModel("StopParameterModel");
+            setGlobalParameters:function(oParameters){ //Kapselung der Funktionen manchmal notwendig
+                this.checkIfTourIsTheSameAsLast();
                 this.setUserInterfaceMethodes();
+            },
+
+            checkIfTourIsTheSameAsLast:function(){ //Vergleicht zuletzt verarbeitete Tour mit der Derzeitigen
+                var oLastTourModel=this.getOwnerComponent().getModel("lastTourModel").getProperty("/tour");
+                var oCurrentTourModel=this.getOwnerComponent().getModel("TourParameterModel").getProperty("/tour"); 
+
+                if(oCurrentTourModel.IdTr!==oLastTourModel.IdTr){ //Wenn unterschiedlich (kann ggf. auch um andere Parameter erweitert werden)
+                    this.setCurrentTourInCompareModel();
+                    this.resetTourData();
+                }
+            },
+
+            resetTourData:function(){ //Entfernt alle bisher gespeicherten Informationen einer Tour
+                var oLoadedNveModel=this.getOwnerComponent().getModel("LoadedNves");
+                var oInterdepotModel=this.getOwnerComponent().getModel("InterdepotNVEs");
+                var oClearedNveModel=this.getOwnerComponent().getModel("ClearedNves");
+                var oClosingNveModel=this.getOwnerComponent().getModel("ClosingNves");
+                var oAllNvesOfTourModel=this.getOwnerComponent().getModel("AllNvesOfTour");
+
+                oLoadedNveModel.setProperty("/results", []);
+                oInterdepotModel.setProperty("/results", []);
+                oClearedNveModel.setProperty("/results", []);
+                oClosingNveModel.setProperty("/results", []);
+                oAllNvesOfTourModel.setProperty("/results", []);
+            },
+
+            setCurrentTourInCompareModel:function(){ //Zum Späteren Abgleich wird sich die "abgeschlossene" Tour gemerkt
+                var oCompareModel=this.getOwnerComponent().getModel("lastTourModel");
+                var oCurrentTourModel=this.getOwnerComponent().getModel("TourParameterModel");
+
+                oCompareModel.setProperty("/tour", oCurrentTourModel.getProperty("/tour"));
             },
 
             ///////////////////////////////////////
@@ -413,7 +443,7 @@ sap.ui.define([
             },
 
             setUserInterfaceMethodes:function(){ //UI wird aktualisiert
-                var oStop=this._sStopParameterModel.getProperty("/Stop");
+                var oStop=this.getOwnerComponent().getModel("StopParameterModel").getProperty("/Stop");
 
                 this.setInterdepotStopTitle(oStop); //Titel der Seite wird angepasst
                 this.setTitleForInterdepotTree(); //Anzeige der verbleibenden NVEs wird angepasst

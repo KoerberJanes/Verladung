@@ -172,6 +172,12 @@
           "sortedNves": []
         }
       },
+      "lastTourModel": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "tour": {}
+        }
+      },
       "oStopOrderChangeAllowedModel": {
         "type": "sap.ui.model.json.JSONModel",
         "settings": {

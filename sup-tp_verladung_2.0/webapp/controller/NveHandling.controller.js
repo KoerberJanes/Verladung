@@ -24,7 +24,6 @@ sap.ui.define([
 
         return Controller.extend("suptpverladung2.0.controller.NveHandling", {
             onInit: function () {
-                this._sStopParameterModel="";
                 this._navigationHandler=navigationHandler;
                 this._sortNveHandler=sortNveHandler;
 
@@ -110,12 +109,12 @@ sap.ui.define([
             },
 
             setGlobalParameters:function(oParameters){  
-                this._sStopParameterModel=this.getOwnerComponent().getModel("StopParameterModel");
+                this.checkIfTourIsTheSameAsLast();
                 this.setUserInterfaceMethodes();
             },
 
             setUserInterfaceMethodes:function(){ //UI wird aktualisiert
-                var oStop=this._sStopParameterModel.getProperty("/Stop");
+                var oStop=this.getOwnerComponent().getModel("StopParameterModel").getProperty("/Stop");
 
                 this.swapInputMode(); //Eingabemodus vorheriger Seiten wird übernommen
                 this.setNveStoptitle(oStop); //Titel der Seite wird angepasst
@@ -147,6 +146,39 @@ sap.ui.define([
                 }
 
                 this.resetNveInputFields();
+            },
+
+            checkIfTourIsTheSameAsLast:function(){ //Vergleicht zuletzt verarbeitete Tour mit der Derzeitigen
+                var oLastTourModel=this.getOwnerComponent().getModel("lastTourModel").getProperty("/tour");
+                var oCurrentTourModel=this.getOwnerComponent().getModel("TourParameterModel").getProperty("/tour"); 
+
+                if(oCurrentTourModel.IdTr!==oLastTourModel.IdTr){ //Wenn unterschiedlich (kann ggf. auch um andere Parameter erweitert werden)
+                    //Verlagerung in die Methode zum Verladen möglich, aber umständlich.
+                    //Bisher nicht gemacht, weil es in der Aktuellen verladung auch so ist.
+                    this.setCurrentTourInCompareModel();
+                    this.resetTourData();
+                }
+            },
+
+            resetTourData:function(){ //Entfernt alle bisher gespeicherten Informationen einer Tour
+                var oLoadedNveModel=this.getOwnerComponent().getModel("LoadedNves");
+                var oInterdepotModel=this.getOwnerComponent().getModel("InterdepotNVEs");
+                var oClearedNveModel=this.getOwnerComponent().getModel("ClearedNves");
+                var oClosingNveModel=this.getOwnerComponent().getModel("ClosingNves");
+                var oAllNvesOfTourModel=this.getOwnerComponent().getModel("AllNvesOfTour");
+
+                oLoadedNveModel.setProperty("/results", []);
+                oInterdepotModel.setProperty("/results", []);
+                oClearedNveModel.setProperty("/results", []);
+                oClosingNveModel.setProperty("/results", []);
+                oAllNvesOfTourModel.setProperty("/results", []);
+            },
+
+            setCurrentTourInCompareModel:function(){ //Zum Späteren Abgleich wird sich die "abgeschlossene" Tour gemerkt
+                var oCompareModel=this.getOwnerComponent().getModel("lastTourModel");
+                var oCurrentTourModel=this.getOwnerComponent().getModel("TourParameterModel");
+
+                oCompareModel.setProperty("/tour", oCurrentTourModel.getProperty("/tour"));
             },
 
 
@@ -610,7 +642,6 @@ sap.ui.define([
             },
 
             saveLoadedNve:function(oNve){ //Speichern einer Verladenen NVE in "_aLoadedNvesOfTour", wenn sie darin noch nicht existiert
-                //this.checkIfLastTourWasTheSame(); 
 
                 var _aLoadedNvesOfTour=this.getOwnerComponent().getModel("LoadedNves").getProperty("/results");
                 if(_aLoadedNvesOfTour.indexOf(oNve)===-1){
@@ -623,7 +654,6 @@ sap.ui.define([
             },
 
             saveClearedNve:function(oNve){ //Speichern einer Verladenen NVE in "_aLoadedNvesOfTour", wenn sie darin noch nicht existiert
-                //this.checkIfLastTourWasTheSame(); 
 
                 var _aClearedNvesOfTour=this.getOwnerComponent().getModel("ClearedNves").getProperty("/results");
                 if(_aClearedNvesOfTour.indexOf(oNve)===-1){
@@ -1023,17 +1053,6 @@ sap.ui.define([
                 } else{
                     this.FuLoadingSet(oFoundNve); //! Prüfung notwendig, ob Fall eintreten kann weil in der Methode "getNveFromGlobalArray" der Ausstieg passieren wrde
                 }
-            },
-
-            checkIfLastTourWasTheSame:function(){ //Prüfen ob der letzte und der aktuelle Kunde der gleich sind
-                //TODO: Methode muss überarbeitet werden
-                /*
-                var oSlectedTourListItem=this.getView().byId("LTourAuswahl").getSelectedItem(); //Objekt selektiert aus der Liste
-                if(this._oLastTour!==oSlectedTourListItem){ //Wenn zum Zeipunkt des Klärens/Verladens ein anderer Kunde als zuvor ausgewählt wurde
-                    this.resetAllGlobalArrays();
-                    this._oLastTour=oSlectedTourListItem; //Merken des neuen Kunden für zukünftige Verlade-/Klärvorgänge
-                }
-                */
             },
 
             checkIfNextStopIsNecessary:function(){ //Prüfen ob NVE-Tree leer ist und somit ein neuer Stopp aufgerufen werden soll
