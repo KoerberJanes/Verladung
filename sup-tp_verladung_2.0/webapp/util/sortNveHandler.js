@@ -131,7 +131,9 @@ sap.ui.define([
         CreateResultArray:function(aUpperNves, aLowerNves){ //! Schwerer Teil, nochmal genau prüfen
             var aResultArray=[];
 
-            aResultArray.concat(aUpperNves, aLowerNves);
+            //aResultArray.concat(aUpperNves, aLowerNves);
+            aResultArray.concat(aUpperNves); //Compiler sagt "Nein"
+            aResultArray.concat(aLowerNves); //Darf nur ein Parameter in der Funktion sein
             this.deleteUnnessecaryArrays(aResultArray, aUpperNves);
         },
 

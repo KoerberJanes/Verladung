@@ -21,10 +21,7 @@ sap.ui.define([
 
         return Controller.extend("suptpverladung2.0.controller.TourSelection", {
             onInit: function () {
-                //!Models sind alle aufrufbar aus der manifest mit:
-                //!"this.getOwnerComponent().getModel("ModelName");"
-                //!Inhalte sind alle aufrufbar aus der manifest mit:
-                //!"this.getOwnerComponent().getModel("ModelName").getProperty("/propertyName");"
+
             },
 
             onAfterRendering:function(){
@@ -123,7 +120,6 @@ sap.ui.define([
                 //!Nächste Zeile muss entfernt werden
                 sIdEumDev="42069_TestNumber"
                 //!Die folgende Zeile ist die Original Zeile, diese muss Bestehen
-                //this._IvIdEumDev = sIdEumDev; // globale Variable mit this._
                 oUserSettingsModel.IvIdEumDev=sIdEumDev;
             },
 
@@ -193,12 +189,13 @@ sap.ui.define([
             sendLog:function(oErrorTextField){ //TODO: Prüfen ob so gewollt
                 this.busyDialogOpen();
                 var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
+                var aErrors=this.getOwnerComponent().getModel("ErrorLog").getProperty("/errors");
 
                 var oModel = this.getView().getModel("TP_VERLADUNG_SRV");
                 var oCreateData = {
                     "IdEumDev": oUserSettingsModel.IvIdEumDev,
                     "ErrorDesc": oErrorTextField.getValue(), 
-                    "ErrorLogList": this.getOwnerComponent().getModel("ErrorLog").getProperty("/errors")
+                    "ErrorLogList": aErrors
                 }
 
                 /*
@@ -240,7 +237,7 @@ sap.ui.define([
                var oTourModel=this.getOwnerComponent().getModel("Tour");
                oTourModel.setProperty("/results", []);//Entfernen alter Inhalte des Models
                oTourModel.setProperty("/results", aRecievedTours);//Schreiben der neuen Inhalte in das Model
-               oTourModel.refresh();
+               oTourModel.refresh(); //Aktualisieren der Anzeige
                this.setFocusonLatestTour();
            },
 
@@ -288,8 +285,8 @@ sap.ui.define([
                 var sDrvDesc=oData.getProperty("/results")[0].DrvDesc;
                 var sLsDesc=oData.getProperty("/results")[0].LsDesc;
 
-                oFahrerInput.setValue(sDrvDesc); //Name der Person
-                oVehicleInput.setValue(sLsDesc); //Kennzeichen des Fahrzeugs
+                oFahrerInput.setValue(sDrvDesc); //Name der Person setzen
+                oVehicleInput.setValue(sLsDesc); //Kennzeichen des Fahrzeugs setzen
 
             },
 
@@ -297,7 +294,6 @@ sap.ui.define([
                 var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 this.getOwnerComponent().getModel("TourParameterModel").setProperty("/tour", oModelStop);
                 oUserSettingsModel.IvIdTr=oModelStop.IdTr;
-                //this._IvIdTr=oModelStop.IdTr;
                 this.onNavToStopView(); //Navigieren, nachdem der Vorgang abgeschlossen ist
             },
 
@@ -308,10 +304,10 @@ sap.ui.define([
             onCheckIfTourSelected:function(){ //Prüfung ob eine Tour ausgewählt wurde
                 var oSelectedItem=this.getView().byId("LTourAuswahl").getSelectedItem();
 
-                if(oSelectedItem!==null){ //Navigation zur anderen Seite
-                    this.getSelectedTour();
-                } else{ //Dialog mit Fehler, dass Tour ausgewählt sein muss
-                    this.noTourSelectedError();
+                if(oSelectedItem!==null){ 
+                    this.getSelectedTour(); //Navigation zur anderen Seite
+                } else{ 
+                    this.noTourSelectedError(); //Dialog mit Fehler, dass Tour ausgewählt sein muss
                 }
             },
 
@@ -321,19 +317,6 @@ sap.ui.define([
             
             onNavToStopView: function() { //Navigation zur Stopp-Übersicht
                 const oRouter = this.getOwnerComponent().getRouter();
-                //Navigation zur Stop-Übersicht
-                //Parameter sind:
-                //1. ob die Stoppreihenfolge änderbar ist
-                //2. Welcher Inputmode gerade aktiv ist
-                //3. Die Identifikation der Person
-                //4. Die Identifikation der Tour 
-                /*
-                oRouter.navTo("RouteStopsOfTour",{
-                    sStopSequenceChangeable:sStopSequenceChangeable, 
-                    bManuelInput:this._bManuelInput,
-                    IvIdEumDev:this._IvIdEumDev,
-                    IvIdTr:this._IvIdTr}); 
-                    */
                 oRouter.navTo("RouteStopsOfTour");
             },
 
@@ -370,7 +353,6 @@ sap.ui.define([
 
             onBusyDialogClose:function(){ //Manuelles Schließen des lade Dialoges aus dem UI (Für Fehler notwendig in der Entwicklung)
                 this.byId("BusyDialog").close();
-                
                 this.setFocusonLatestTour();
             },
 
@@ -389,7 +371,7 @@ sap.ui.define([
             noTourSelectedError:function(){ //Es wurde keine Tour ausgewählt (eigentlich nicht möglich)
                 MessageBox.error(this._i18nModel.getText("noTourSelected"), {
                     onClose:function(){
-                        //Fokus in die Inputfelder
+                        this.setFocusonLatestTour(); //Fokus in die Inputfelder
                     }.bind(this)
                 });
             },

@@ -39,7 +39,7 @@ sap.ui.define([
             },
             */
 
-            /* Von Robin Code für den Scan ohne Inputfelder
+            /* Von Robin Code für den Scan ohne Inputfelder --> ist das noch notwendig, oder alles mit der Implementierung abgeschlossen?
             myCordova.enableDataWedge = function() {
              
                 document.addEventListener('keydown', function(evt) {
@@ -78,7 +78,6 @@ sap.ui.define([
 
                 this._oRouter = this.getOwnerComponent().getRouter();
 			    this._oRouter.getRoute("RouteStopsOfTour").attachPatternMatched(this.onObjectMatched, this);
-                //this.initiateScanner();
             },
 
             onAfterRendering:function(){
@@ -88,25 +87,8 @@ sap.ui.define([
                     this.setFocusStopSortPage(); //Fokus Methode für die jeweiligen Felder
                 }.bind(this));
             },
-            /*
-            initiateScanner:function(){
-                scanner.registerScanner((scannedValue) => {
-                    if(scannedValue.match(/[0-9]/) && scannedValue.match(/[a-zA-Z]/)){
-                        //only letters
-                        //this.setValueInput(scannedValue);
-                        sap.m.MessageToast.show("Gescannted Inhalt: "+scannedValue);
-                    } else{
-                        if(scannedValue.match(/^[0-9]+$/)){
-                            //Only Numbers
-                            sap.m.MessageToast.show("Gescannted Inhalt: "+scannedValue);
-                        }else{
-                            sap.m.MessageToast.error("Gescannted Inhalt nicht gültig!");
-                        }
-                    }
-                });
-            },
-            */
-            onObjectMatched:function(oEvent){
+
+            onObjectMatched:function(oEvent){ //Seite wird Identifiziert und globale Parameter gesetzt
                 var oParameters=oEvent.getParameter("arguments");
                 this.setGlobalParameters(oParameters);
             },
@@ -121,10 +103,10 @@ sap.ui.define([
             ChangeFromManToScan:function(){ //Vorbereitung zum Wechseln des Eingabemodus
                 var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
 
-                if(oUserSettingsModel.bManuelInput){ //Ist der Eingabemodus von Hand?
-                    oUserSettingsModel.bManuelInput=false
+                if(oUserSettingsModel.bManuelInput){
+                    oUserSettingsModel.bManuelInput=false //Eingabe durch Scan wird eingestellt
                 } else{
-                    oUserSettingsModel.bManuelInput=true;
+                    oUserSettingsModel.bManuelInput=true; //Eingabe von Hand wird eingestellt
                 }
 
                 this.swapInputMode();
@@ -133,10 +115,10 @@ sap.ui.define([
             swapInputMode:function(){ //Austauschen der Inputfelder
                 var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 
-                if(oUserSettingsModel.bManuelInput){
+                if(oUserSettingsModel.bManuelInput){ //Input-Feld wird sichtbar
                     this.getView().byId("ScanInputStops").setVisible(false);
                     this.getView().byId("ManInputStops").setVisible(true);
-                } else{
+                } else{ //Scan-Feld wird sichtbar
                     this.getView().byId("ScanInputStops").setVisible(true);
                     this.getView().byId("ManInputStops").setVisible(false);
                 }
@@ -209,8 +191,8 @@ sap.ui.define([
                  
                 if(oData.EvChangeable===""){//"" --> ist in ABAP false --> es dürfen fertig verladene Stops nicht angezeigt werden
                     oUserSettingsModel.bStopSequenceChangeable=false;
-                    aRecievedStops=this.filterFinishedStops(aRecievedStops);
-                    oStopModel.setProperty("/results", aRecievedStops);
+                    aRecievedStops=this.filterFinishedStops(aRecievedStops); //Abgeschlossene Stops werden entfernt
+                    oStopModel.setProperty("/results", aRecievedStops); //Stops werden in das Stop-Model gesetzt
                 } else{
                     oUserSettingsModel.bStopSequenceChangeable=true;
                     oStopModel.setProperty("/results", aRecievedStops);
@@ -219,13 +201,14 @@ sap.ui.define([
                 //Code Dopplung im if-else, weil Stoppnummer fest ist, wenn nicht mehr geändert werden darf
             },
 
-            checkIfStopOrderChangeable:function(){
+            checkIfStopOrderChangeable:function(){ //Prüfen ob Stopp-Reihenfolge geändert werden darf
                 var aLoadedNves=this.getOwnerComponent().getModel("LoadedNves").getProperty("/results");
                 var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 var oStopOrderChangeAllowedModel=this.getOwnerComponent().getModel("oStopOrderChangeAllowedModel").getProperty("/status");
+                //Util Handler wird aufgerufen
                 this._stopSequenceHandler.chekIfStopSequenceChangeable(oUserSettingsModel, oStopOrderChangeAllowedModel);
                 this._stopSequenceHandler.checkIfNvesAreLoaded(aLoadedNves, oStopOrderChangeAllowedModel);
-
+                //Auswerten der Ergebnisse
                 if(oStopOrderChangeAllowedModel.bStopOrderChangeGeneralyAllowed && oStopOrderChangeAllowedModel.bStopOrderChangeAllowedDueToNoNves){
                     this.stopDescriptionRefresh();
                 } else{
@@ -233,13 +216,14 @@ sap.ui.define([
                 }
             },
 
-            checkIfStopOrderChangeableForButtons:function(oEvent){
+            checkIfStopOrderChangeableForButtons:function(oEvent){ //Prüfen ob Stopp-Reihenfolge geändert werden darf, wenn Buttons betätigt
                 var aLoadedNves=this.getOwnerComponent().getModel("LoadedNves").getProperty("/results");
                 var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 var oStopOrderChangeAllowedModel=this.getOwnerComponent().getModel("oStopOrderChangeAllowedModel").getProperty("/status");
+                //Util Handler wird aufgerufen
                 this._stopSequenceHandler.chekIfStopSequenceChangeable(oUserSettingsModel, oStopOrderChangeAllowedModel);
                 this._stopSequenceHandler.checkIfNvesAreLoaded(aLoadedNves, oStopOrderChangeAllowedModel);
-
+                //Auswerten der Ergebnisse
                 if(oStopOrderChangeAllowedModel.bStopOrderChangeGeneralyAllowed && oStopOrderChangeAllowedModel.bStopOrderChangeAllowedDueToNoNves){
                     this.checkIfStoppIsSelected(oEvent);
                 } else{
@@ -339,8 +323,8 @@ sap.ui.define([
             onZoomToPosition:function(){
                 var sGeoLocationOfStop=this.getOwnerComponent().getModel("SpotModel").getProperty("/spot")[0].pos;
                 var oGeoMapFragment=this.getView().byId("customerInfoGeoMapDialog");
-                var aBananaSplit=sGeoLocationOfStop.split(';');
-
+                var aBananaSplit=sGeoLocationOfStop.split(';'); //Array enthält [X-Position],[Y-Position],[Z-Position]
+                
                 oGeoMapFragment.getContent()[0].zoomToGeoPosition(parseFloat(aBananaSplit[0]), parseFloat(aBananaSplit[1]), parseFloat(aBananaSplit[2]));
             },
 
@@ -399,8 +383,8 @@ sap.ui.define([
                 var aListofStopps=oModel.getProperty("/results");
                 var iIndexSelectedItem=aListofStopps.indexOf(oStopOfModel);
                 
-                oList.setSelectedItem(aListItems[iIndexSelectedItem], true);
-                this.onScrollToItem(iIndexSelectedItem, aListItems); 
+                oList.setSelectedItem(aListItems[iIndexSelectedItem], true); //Item selektieren, nachdem dieses Verschoben wurde
+                this.onScrollToItem(iIndexSelectedItem, aListItems); //Zu Item scrollen
             },
             
             stopDescriptionRefresh:function(){ //Wird benötigt um die Stoppreihenfolge mit der ensprechenden Nummer bzw. dem Präfix "_"/"*" zu versehen
@@ -446,9 +430,10 @@ sap.ui.define([
                 var aLoadedNves=this.getOwnerComponent().getModel("LoadedNves").getProperty("/results");
                 var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
                 var oStopOrderChangeAllowedModel=this.getOwnerComponent().getModel("oStopOrderChangeAllowedModel").getProperty("/status");
+                //Util Handler wird aufgerufen
                 this._stopSequenceHandler.chekIfStopSequenceChangeable(oUserSettingsModel, oStopOrderChangeAllowedModel);
                 this._stopSequenceHandler.checkIfNvesAreLoaded(aLoadedNves, oStopOrderChangeAllowedModel);
-
+                //Auswerten der Ergebnisse
                 if(oStopOrderChangeAllowedModel.bStopOrderChangeGeneralyAllowed && oStopOrderChangeAllowedModel.bStopOrderChangeAllowedDueToNoNves){
                     this.checkIfStopSelected(aStops);
                 } else{
@@ -561,7 +546,7 @@ sap.ui.define([
             },
             */
 
-            getLastStopOfList:function(){ //Der Letzte Stopp in der Liste wird
+            getLastStopOfList:function(){ //Der Letzte Stopp in der Liste wird gesetzt
                 var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
                 var aFilteredStops=this.filterFinishedStops(aStops);
                 var oLastStopOfList=aFilteredStops[aFilteredStops.length-1];
@@ -590,7 +575,7 @@ sap.ui.define([
                 }
             },
 
-            callNavigationHandler:function(oStop){
+            callNavigationHandler:function(oStop){ //Erhalten der NVEs und setzen um welche Art Stopps es sich handelt
                 this.busyDialogOpen();
                 var oResponseModel=this.getOwnerComponent().getModel("Response");
                 var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
@@ -598,10 +583,10 @@ sap.ui.define([
                 this.getKindOfStop();
             },
 
-            getKindOfStop:function(){
+            getKindOfStop:function(){ //Auslesen um welche Art Stopps es sich handelt
                 var oResponseModel=this.getOwnerComponent().getModel("Response");
                 var aResponseNves=oResponseModel.getProperty("/results");
-                
+                //Setzen der NVEs in jeweiliges Model
                 if(oResponseModel.isInterdepot==true){
                     this.setNvesOfStop_InterdepotCase(aResponseNves);
                 } else{
@@ -640,7 +625,7 @@ sap.ui.define([
             //set-Methoden
             ///////////////////////////////////////
 
-            setCustomerSpotForGeoMap:function(){
+            setCustomerSpotForGeoMap:function(){ //Spot des Kunden wird in die Geo-Map gesetzt
                 var oSpotModel=this.getOwnerComponent().getModel("SpotModel");
                 var oDisplayedStop=this.getOwnerComponent().getModel("StopInfoModel").getProperty("/info");
                 var oSpot={
@@ -649,7 +634,7 @@ sap.ui.define([
                     type: "Success",
                     text: "oDisplayedStop.Name1",
                     StopNumber: oDisplayedStop.Description.substring(1,4)
-                };
+                }; //Spot-Objekt wird mit Daten erstellt
 
                 oSpotModel.setProperty("/spot", []); //Entfernen ggf. vorher angezeigter Spots
                 oSpotModel.setProperty("/spot", [oSpot]);
@@ -663,12 +648,11 @@ sap.ui.define([
 
             setCustomerDialogModel:function(oSelectedObject){
                 //Setzen von Objekt in das Model:
-                //this.getView().getModel("StopInfoModel").setProperty("/info", oSelectedObject);
                 this.getOwnerComponent().getModel("StopInfoModel").setProperty("/info", oSelectedObject);
                 this.onCustomerInfoDialogOpen();
             },
 
-            onClickSpot: function (oEvent) {
+            onClickSpot: function (oEvent) { //Wenn Spot-geklickt wird öffnet sich ein kleines Detail-Fenster
                 var oSpot=this.getOwnerComponent().getModel("SpotModel").getProperty("/spot")[0];
                 oEvent.getSource().openDetailWindow("Stopp Nummer "+oSpot.StopNumber +" "+oSpot.StopNumber, "0", "0" );
             },
@@ -677,7 +661,7 @@ sap.ui.define([
                 this.getView().byId("StopSortPageTitle").setText(oTour.Description);
             },
 
-            setFocusDialogClose:function(){
+            setFocusDialogClose:function(){ //Callback-Methode
                 this.setFocusStopSortPage();
             },
 
@@ -722,7 +706,6 @@ sap.ui.define([
             findScannedCustomer:function(oSelectedStop, iSelectedStopIndex){ //Prüfe ob der gescannte Kunde in der Liste existiert
                 var sInput= this.getInputValue("ManInputStops", "ScanInputStops");
                 //TODO_8: sInput = sInput.replace(/^0+/, '');
-                //var aStops=this.getView().getModel("Stops").getProperty("/results");
                 var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
                 var oScannedStop=undefined;
 
@@ -732,7 +715,7 @@ sap.ui.define([
                     }
                 }
 
-                if(oScannedStop!==undefined){
+                if(oScannedStop!==undefined){ //Gescannter Stopp gefunden
                     this.processCustomerScan(oSelectedStop, iSelectedStopIndex, oScannedStop);
                 } else{
                     this.noStopWithThisIdError(sInput); //Fehler weil er nicht in der Liste vorhanden ist
@@ -743,7 +726,7 @@ sap.ui.define([
                 var iIndexSelectedItem=this.getView().byId("stopList").getItems().indexOf(oSelectedItem);
                 var aStops=this.getOwnerComponent().getModel("Stops").getProperty("/results");
                 var oSelectedObject=aStops[iIndexSelectedItem];
-
+                //Stop in Model merken und Navigieren
                 this.setStopParameterModel(oSelectedObject);
                 this.callNavigationHandler(oSelectedObject);
 

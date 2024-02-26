@@ -39,22 +39,6 @@ sap.ui.define([
                 }.bind(this));
             },
 
-            initiateScanner:function(){
-                scanner.registerScanner((scannedValue) => {
-                    if(scannedValue.match(/[0-9]/) && scannedValue.match(/[a-zA-Z]/)){
-                        //only letters
-                        sap.m.MessageToast.show("Gescannted Inhalt: "+scannedValue);
-                    } else{
-                        if(scannedValue.match(/^[0-9]+$/)){
-                            //Only Numbers
-                            sap.m.MessageToast.show("Gescannted Inhalt: "+scannedValue);
-                        }else{
-                            sap.m.MessageToast.error("Gescannted Inhalt nicht gültig!");
-                        }
-                    }
-                });
-            },
-
             callNavigationHandler:function(oStop){ //
                 this.busyDialogOpen();
                 var oUserSettingsModel=this.getOwnerComponent().getModel("UserSettings").getProperty("/settings");
